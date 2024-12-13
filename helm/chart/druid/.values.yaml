@@ -11,8 +11,7 @@ domain: "data.fasti.sh"
 organization: fastish
 
 image:
-  tag: 34.0.0
-  repository: apache/druid
+  uri: apache/druid:35.0.0
   pullPolicy: Always
 
 labels:
@@ -44,7 +43,7 @@ runtime: |-
 
   # extensions
   # https://druid.apache.org/docs/latest/configuration/extensions
-  druid.extensions.loadList=["simple-client-sslcontext", "druid-basic-security", "druid-s3-extensions", "druid-aws-rds-extensions", "postgresql-metadata-storage", "druid-multi-stage-query", "druid-kafka-indexing-service", "prometheus-emitter", "druid-kubernetes-extensions", "druid-kubernetes-overlord-extensions"]
+  druid.extensions.loadList=["simple-client-sslcontext", "druid-basic-security", "druid-s3-extensions", "druid-aws-rds-extensions", "postgresql-metadata-storage", "druid-kafka-indexing-service", "prometheus-emitter", "druid-kubernetes-extensions", "druid-kubernetes-overlord-extensions"]
 
   # authn/authz + default users
   # https://druid.apache.org/docs/latest/configuration/#authentication-and-authorization
@@ -81,6 +80,7 @@ runtime: |-
   druid.server.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/server-truststore.p12
   druid.server.https.trustStorePassword=changeit
   druid.server.https.validateHostnames=false
+  druid.server.https.sniHostCheck=false
   druid.client.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/client-keystore.p12
   druid.client.https.keyStoreType=pkcs12
   druid.client.https.certAlias=druid-client
@@ -237,19 +237,9 @@ volumes:
           path: server-truststore.p12
         - key: server.crt
           path: server.crt
-  - name: druid-credentials
-    csi:
-      driver: secrets-store.csi.k8s.io
-      readOnly: true
-      volumeAttributes:
-        secretProviderClass: "druid-v1-secretprovider"
-
 volumeMounts:
   - mountPath: /opt/druid/conf/druid/cluster/_common
     name: druid-common-conf
-    readOnly: true
-  - mountPath: /opt/druid/conf/druid/cluster/credentials
-    name: druid-credentials
     readOnly: true
   - mountPath: /opt/druid/conf/druid/cluster/tls
     name: druid-tls
