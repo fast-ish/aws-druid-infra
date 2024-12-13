@@ -1,12 +1,22 @@
 {{/* vim: set filetype=mustache: */}}
 
+{{/*
+Naming
+*/}}
+
 {{- define "druid.name" -}}
 {{ .Values.hostedId }}-{{ .Release.Name }}
 {{- end -}}
 
-{{- define "druid.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- define "druid.component.name" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{ include "druid.name" $ctx }}-druid-{{ $component }}
 {{- end -}}
+
+{{/*
+Labels & Annotations
+*/}}
 
 {{- define "common.labels" -}}
 {{- range $k, $v := .Values.labels }}
@@ -20,35 +30,37 @@
 {{- end }}
 {{- end -}}
 
-{{- define "common.volumes" -}}
-{{- with .Values.volumes }}
-{{- . | toYaml }}
+{{- define "druid.component.labels" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- include "common.labels" $ctx }}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- range $k, $v := $componentValues.metadata.labels }}
+{{ $k | quote }}: {{ $v | quote }}
 {{- end }}
 {{- end -}}
 
-{{- define "common.volumeMounts" -}}
-{{- with .Values.volumeMounts }}
-{{- . | toYaml }}
+{{- define "druid.component.annotations" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- include "common.annotations" $ctx }}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- range $k, $v := $componentValues.metadata.annotations }}
+{{ $k | quote }}: {{ $v | quote }}
 {{- end }}
 {{- end -}}
 
-{{- define "common.security" -}}
-automountServiceAccountToken: true
-serviceAccountName: {{ include "druid.name" . }}-druid-sa
-securityContext:
-{{- toYaml .Values.securityContext | nindent 2 }}
+{{- define "druid.component.match.labels" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{ $ctx.Values.domain }}/name: {{ $ctx.Values.name }}
+{{ $ctx.Values.domain }}/version: {{ $ctx.Values.version }}
+{{ $ctx.Values.domain }}/component: {{ include "druid.component.name" (list $component $ctx) }}
 {{- end -}}
 
-{{- define "common.env" -}}
-{{- with .Values.env }}
-{{- . | toYaml }}
-{{- end }}
-{{- end -}}
-
-{{- define "druid.image" -}}
-image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-imagePullPolicy: {{ .Values.image.pullPolicy }}
-{{- end -}}
+{{/*
+Node
+*/}}
 
 {{- define "druid.node.selector" -}}
 kubernetes.io/arch: amd64
@@ -65,8 +77,236 @@ karpenter.sh/capacity-type: on-demand
 {{- define "druid.node.requirements" -}}
 - key: "kubernetes.io/arch"
   operator: In
-  values: [ "amd64" ]
+  values: ["amd64"]
 - key: "kubernetes.io/os"
   operator: In
-  values: [ "linux" ]
+  values: ["linux"]
+{{- end -}}
+
+{{- define "druid.component.node.selector" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- include "druid.node.selector" $ctx }}
+{{- $componentValues := index $ctx.Values $component }}
+{{ toYaml $componentValues.node.selector }}
+eks.amazonaws.com/nodegroup: {{ include "druid.component.name" (list $component $ctx) }}-node
+{{- end -}}
+
+{{/*
+Volumes
+*/}}
+
+{{- define "common.volumes" -}}
+{{- with .Values.volumes }}
+{{- . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{- define "common.volumeMounts" -}}
+{{- with .Values.volumeMounts }}
+{{- . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.component.volumes" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- include "common.volumes" $ctx }}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- with $componentValues.volumes }}
+{{ . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.component.volumeMounts" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- include "common.volumeMounts" $ctx }}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- with $componentValues.volumeMounts }}
+{{ . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Security
+*/}}
+
+{{- define "common.security" -}}
+automountServiceAccountToken: true
+serviceAccountName: {{ include "druid.name" . }}-druid-sa
+securityContext:
+{{- toYaml .Values.securityContext | nindent 2 }}
+{{- end -}}
+
+{{/*
+Environment
+*/}}
+
+{{- define "common.env" -}}
+{{- with .Values.env }}
+{{- . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Image
+*/}}
+
+{{- define "druid.image" -}}
+image: "{{ .Values.image.uri }}"
+imagePullPolicy: {{ .Values.image.pullPolicy }}
+{{- end -}}
+
+{{/*
+JVM
+*/}}
+
+{{- define "druid.component.jvm" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- if $componentValues.jvm }}
+{{- printf "%s\n%s" ($ctx.Files.Get "common/jvm.config") $componentValues.jvm | toYaml }}
+{{- else }}
+{{- $ctx.Files.Get "common/jvm.config" | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Probes
+*/}}
+
+{{- define "druid.probes" -}}
+{{- $port := index . 0 -}}
+{{- $healthPath := index . 1 -}}
+{{- $readinessPath := index . 2 -}}
+livenessProbe:
+  failureThreshold: 3
+  tcpSocket:
+    port: {{ $port }}
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+readinessProbe:
+  failureThreshold: 10
+  tcpSocket:
+    port: {{ $port }}
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+startupProbe:
+  failureThreshold: 30
+  tcpSocket:
+    port: {{ $port }}
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+{{- end -}}
+
+{{/*
+Ports
+*/}}
+
+{{- define "druid.ports" -}}
+{{- $name := index . 0 -}}
+{{- $port := index . 1 -}}
+ports:
+  - name: {{ $name }}
+    containerPort: {{ $port }}
+    protocol: TCP
+  - name: prometheus
+    containerPort: 9000
+    protocol: TCP
+{{- end -}}
+
+{{- define "druid.service.ports" -}}
+{{- $name := index . 0 -}}
+{{- $port := index . 1 -}}
+ports:
+  - name: {{ $name }}
+    port: {{ $port }}
+  - name: prometheus
+    port: 9000
+{{- end -}}
+
+{{/*
+NodePool
+*/}}
+
+{{- define "druid.nodepool.spec" -}}
+{{- $component := index . 0 -}}
+{{- $ctx := index . 1 -}}
+{{- $componentValues := index $ctx.Values $component -}}
+{{- $nodeName := include "druid.component.name" (list $component $ctx) -}}
+spec:
+  limits:
+    {{- toYaml $componentValues.node.limits | nindent 4 }}
+  disruption:
+    {{- toYaml $componentValues.node.disruption | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "druid.node.labels" $ctx | nindent 8 }}
+        eks.amazonaws.com/nodegroup: {{ $nodeName }}-node
+    spec:
+      requirements:
+        - key: "eks.amazonaws.com/nodegroup"
+          operator: In
+          values: ["{{ $nodeName }}-node"]
+        {{- include "druid.node.requirements" $ctx | nindent 8 }}
+        {{- toYaml $componentValues.node.requirements | nindent 8 }}
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: {{ include "druid.name" $ctx }}-druid-nodeclass
+{{- end -}}
+
+{{/*
+Task (special case - nested under task.base)
+*/}}
+
+{{- define "druid.task.labels" -}}
+{{- include "common.labels" . }}
+{{- range $k, $v := .Values.task.base.metadata.labels }}
+{{ $k | quote }}: {{ $v | quote }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.task.annotations" -}}
+{{- include "common.annotations" . }}
+{{- range $k, $v := .Values.task.base.metadata.annotations }}
+{{ $k | quote }}: {{ $v | quote }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.task.node.selector" -}}
+{{- include "druid.node.selector" . }}
+{{ toYaml .Values.task.base.node.selector }}
+eks.amazonaws.com/nodegroup: {{ include "druid.name" . }}-druid-task-base-node
+{{- end -}}
+
+{{- define "druid.task.volumes" -}}
+{{- include "common.volumes" . }}
+{{- with .Values.task.base.volumes }}
+{{ . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.task.volumeMounts" -}}
+{{- include "common.volumeMounts" . }}
+{{- with .Values.task.base.volumeMounts }}
+{{ . | toYaml }}
+{{- end }}
+{{- end -}}
+
+{{- define "druid.task.jvm" -}}
+{{- if .Values.task.base.jvm }}
+{{- printf "%s\n%s" (.Files.Get "common/jvm.config") .Values.task.base.jvm | toYaml }}
+{{- else }}
+{{- .Files.Get "common/jvm.config" | toYaml }}
+{{- end }}
 {{- end -}}

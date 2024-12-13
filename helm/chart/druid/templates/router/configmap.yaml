@@ -1,19 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "druid.name" . }}-druid-router-conf
+  name: {{ include "druid.component.name" (list "router" .) }}-conf
   labels:
-    {{- include "router.labels" . | indent 4 }}
+    {{- include "druid.component.labels" (list "router" .) | indent 4 }}
   annotations:
-    {{- include "router.annotations" . | indent 4 }}
+    {{- include "druid.component.annotations" (list "router" .) | indent 4 }}
 data:
   "log4j2.xml":
     {{- .Files.Get "common/log4j2.xml" | toYaml | indent 4 }}
   "jvm.config":
-    {{- if .Values.router.jvm }}
-    {{- printf "%s\n%s" (.Files.Get "common/jvm.config") .Values.router.jvm | toYaml | indent 4 }}
-    {{- else}}
-    {{- .Files.Get "common/jvm.config" | toYaml | indent 4 }}
-    {{- end }}
+    {{- include "druid.component.jvm" (list "router" .) | indent 4 }}
   "runtime.properties":
     {{- .Values.router.runtime | toYaml | indent 4 }}
