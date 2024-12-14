@@ -10,8 +10,7 @@ domain: "{{deployment:domain}}"
 organization: "{{deployment:organization}}"
 
 image:
-  tag: "34.0.0"
-  repository: public.ecr.aws/q9l5h9b2/fasti.sh/v1/docker/druid
+  uri: "{{image:uri}}"
   pullPolicy: Always
 
 labels:
@@ -42,7 +41,7 @@ runtime: |-
 
   # extensions
   # https://druid.apache.org/docs/latest/configuration/extensions
-  druid.extensions.loadList=["simple-client-sslcontext", "druid-basic-security", "druid-s3-extensions", "druid-aws-rds-extensions", "postgresql-metadata-storage", "druid-multi-stage-query", "druid-kafka-indexing-service", "prometheus-emitter", "druid-kubernetes-extensions", "druid-kubernetes-overlord-extensions"]
+  druid.extensions.loadList=["simple-client-sslcontext", "druid-basic-security", "druid-s3-extensions", "druid-aws-rds-extensions", "postgresql-metadata-storage", "druid-kafka-indexing-service", "prometheus-emitter", "druid-kubernetes-extensions", "druid-kubernetes-overlord-extensions"]
 
   # authn/authz + default users
   # https://druid.apache.org/docs/latest/configuration/#authentication-and-authorization
@@ -79,6 +78,8 @@ runtime: |-
   druid.server.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/server-truststore.p12
   druid.server.https.trustStorePassword=changeit
   druid.server.https.validateHostnames=false
+  druid.server.https.sniHostCheck=false
+  druid.server.http.enforceStrictSNIHostChecking=false
   druid.client.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/client-keystore.p12
   druid.client.https.keyStoreType=pkcs12
   druid.client.https.certAlias=druid-client
@@ -233,19 +234,9 @@ volumes:
           path: server-truststore.p12
         - key: server.crt
           path: server.crt
-  - name: druid-credentials
-    csi:
-      driver: secrets-store.csi.k8s.io
-      readOnly: true
-      volumeAttributes:
-        secretProviderClass: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-secretprovider
-
 volumeMounts:
   - mountPath: /opt/druid/conf/druid/cluster/_common
     name: druid-common-conf
-    readOnly: true
-  - mountPath: /opt/druid/conf/druid/cluster/credentials
-    name: druid-credentials
     readOnly: true
   - mountPath: /opt/druid/conf/druid/cluster/tls
     name: druid-tls
@@ -378,9 +369,10 @@ broker:
     druid.broker.http.maxQueuedBytes=62500000
     druid.broker.http.numMaxThreads=35
     druid.broker.retryPolicy.numTries=1
-    druid.processing.buffer.sizeBytes=125000000
+    druid.processing.buffer.sizeBytes=500000000
     druid.processing.buffer.poolCacheInitialCount=0
-    druid.processing.numMergeBuffers=8
+    druid.processing.numThreads=7
+    druid.processing.numMergeBuffers=2
     druid.processing.fifo=true
     druid.processing.tmpDir=/var/druid/query/tmp
     druid.processing.merge.useParallelMergePool=true
@@ -665,14 +657,14 @@ historical:
     druid.coordinator.loadqueuepeon.curator.numCallbackThreads=2
     druid.segmentCache.numThreadsToLoadSegmentsIntoPageCacheOnDownload=0
     druid.segmentCache.numThreadsToLoadSegmentsIntoPageCacheOnBootstrap=0
-    druid.server.http.numThread=42
+    druid.server.http.numThreads=42
     druid.server.http.maxIdleTime=PT5M
     druid.server.http.enableRequestLimit=false
     druid.server.http.defaultQueryTimeout=300000
     druid.server.http.gracefulShutdownTimeout=PT30S
     druid.server.http.unannouncePropagationDelay=PT0S
     druid.server.http.maxRequestHeaderSize=10000
-    druid.processing.buffer.sizeBytes=125000000
+    druid.processing.buffer.sizeBytes=500000000
     druid.processing.formatString=processing-%s
     druid.processing.numMergeBuffers=3
     druid.processing.numThreads=12
@@ -734,11 +726,10 @@ task:
       druid.indexer.runner.type=k8s
       druid.indexer.task.encapsulatedTask=true
       druid.indexer.task.baseTaskDir=/var/druid/task
+      druid.processing.buffer.sizeBytes=500000000
+      druid.processing.numThreads=7
+      druid.processing.numMergeBuffers=2
     jvm: |-
-      -server
-      -XX:+UseG1GC
-      -XX:+ExitOnOutOfMemoryError
-      -Duser.timezone=UTC
-      -Dfile.encoding=UTF-8
-      -Djava.io.tmpdir=/var/druid
-      -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager
+      -Xms48g
+      -Xmx48g
+      -XX:MaxDirectMemorySize=8g

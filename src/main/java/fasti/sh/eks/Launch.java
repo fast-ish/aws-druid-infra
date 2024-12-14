@@ -26,39 +26,36 @@ public class Launch {
     var conf = get(app);
 
     new DruidStack(
-      app, conf.release(),
-      StackProps
-        .builder()
-        .stackName(name(conf.release().common().id(), "druid"))
-        .env(
-          Environment
-            .builder()
-            .account(conf.release().common().account())
-            .region(conf.release().common().region())
-            .build())
-        .description(
-          describe(
-            conf.platform(),
-            String
-              .format(
-                "Druid cluster release [%s/%s] - Apache Druid on EKS",
-                conf.release().common().name(),
-                conf.release().common().alias())))
-        .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
-        .build());
+        app, conf.release(),
+        StackProps.builder()
+            .stackName(name(conf.release().common().id(), "druid"))
+            .env(
+                Environment.builder()
+                    .account(conf.release().common().account())
+                    .region(conf.release().common().region())
+                    .build())
+            .description(
+                describe(
+                    conf.platform(),
+                    String.format(
+                        "Druid cluster release [%s/%s] - Apache Druid on EKS",
+                        conf.release().common().name(),
+                        conf.release().common().alias())))
+            .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
+            .build());
 
     app.synth();
   }
 
   @SneakyThrows
   private static Release<DruidReleaseConf> get(App app) {
-    var parsed = Template
-      .parse(
+    var parsed = Template.parse(
         app,
         "conf.mustache",
-        Map
-          .ofEntries(
-            Map.entry("deployment:eks:druid:release", app.getNode().getContext("deployment:eks:druid:release").toString()),
+        Map.ofEntries(
+            Map.entry(
+                "deployment:eks:druid:release",
+                app.getNode().getContext("deployment:eks:druid:release").toString()),
             Map.entry("deployment:tags", tags(app))));
     var type = new TypeReference<Release<DruidReleaseConf>>() {};
     return Mapper.get().readValue(parsed, type);
