@@ -1,0 +1,6 @@
+access: config/access.yaml
+secrets: config/secrets.yaml
+storage: config/storage.yaml
+ingestion: config/ingestion.yaml
+asset: helm/druid-chart.tgz
+chart: null

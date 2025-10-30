@@ -1,10 +1,7 @@
 name: Code Quality & Security
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  workflow_dispatch:
   schedule:
     # run at 9:00 am utc every monday
     - cron: '0 9 * * 1'
@@ -44,7 +41,13 @@ jobs:
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           ${{ runner.os }}-maven-
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: compile project
       run: mvn clean compile -B
     
@@ -84,7 +87,13 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: run tests with JaCoCo coverage
       run: mvn clean test jacoco:report -B || true
     
@@ -93,7 +102,7 @@ jobs:
       with:
         files: target/site/jacoco/jacoco.xml
         flags: unittests
-        name: codecov-cdk-common
+        name: codecov-aws-druid-infra
         fail_ci_if_error: false
         verbose: true
       env:
@@ -143,18 +152,24 @@ jobs:
   spotbugs-analysis:
     name: spotbugs static analysis
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: run spotbugs analysis
       run: |
         mvn clean compile spotbugs:spotbugs -B || true
@@ -178,18 +193,24 @@ jobs:
   pmd-analysis:
     name: pmd static analysis
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: run pmd analysis
       run: |
         mvn clean compile pmd:pmd pmd:cpd -B || true
@@ -216,18 +237,24 @@ jobs:
   checkstyle-analysis:
     name: checkstyle analysis
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: run checkstyle
       run: mvn clean checkstyle:checkstyle -B || true
     
@@ -250,22 +277,22 @@ jobs:
   dependency-check:
     name: owasp dependency check
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
     - name: run owasp dependency check
       uses: dependency-check/Dependency-Check_Action@main
       with:
-        project: 'cdk-common'
+        project: 'aws-druid-infra'
         path: '.'
         format: 'ALL'
         args: >
@@ -284,18 +311,24 @@ jobs:
   dependency-analysis:
     name: maven dependency analysis
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: analyze dependencies
       run: |
         mvn dependency:analyze -B || true
@@ -312,34 +345,40 @@ jobs:
     name: sonarcloud analysis
     runs-on: ubuntu-latest
     if: github.event_name != 'schedule'
-    
+
     steps:
     - name: checkout code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-    
+
     - name: set up jdk ${{ env.JAVA_VERSION }}
       uses: actions/setup-java@v4
       with:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: ${{ env.JAVA_DISTRIBUTION }}
         cache: maven
-    
+
+    - name: build cdk-common dependency
+      run: |
+        git clone https://github.com/fast-ish/cdk-common.git /tmp/cdk-common
+        cd /tmp/cdk-common
+        mvn clean install -DskipTests -B
+
     - name: cache sonarcloud packages
       uses: actions/cache@v4
       with:
         path: ~/.sonar/cache
         key: ${{ runner.os }}-sonar
         restore-keys: ${{ runner.os }}-sonar
-    
+
     - name: analyze with sonarcloud
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
         mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=cdk-common \
+          -Dsonar.projectKey=aws-druid-infra \
           -Dsonar.organization=tinstafl \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.java.source=${{ env.JAVA_VERSION }} \
@@ -348,9 +387,9 @@ jobs:
   quality-gate:
     name: quality gate
     runs-on: ubuntu-latest
-    needs: [build-and-test, code-coverage, spotbugs-analysis, pmd-analysis, checkstyle-analysis]
+    needs: [ build-and-test, code-coverage, spotbugs-analysis, pmd-analysis, checkstyle-analysis ]
     if: always()
-    
+
     steps:
     - name: check quality gate status
       run: |
@@ -364,7 +403,7 @@ jobs:
         echo "| PMD | ${{ needs.pmd-analysis.result == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Checkstyle | ${{ needs.checkstyle-analysis.result == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        
+
         if [[ "${{ needs.build-and-test.result }}" == "failure" ]]; then
           echo "❌ **Quality Gate Failed:** Build and tests must pass" >> $GITHUB_STEP_SUMMARY
           exit 1

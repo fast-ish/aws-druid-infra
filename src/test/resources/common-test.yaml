@@ -1,0 +1,5 @@
+env: production
+jvmConf: config/jvm.properties
+log4jConf: config/log4j2.xml
+metricConf: config/metrics.yaml
+runtimeProperties: config/runtime.properties
