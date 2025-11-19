@@ -13,12 +13,12 @@ import software.amazon.awscdk.StackProps;
 import software.constructs.Construct;
 
 @Getter
-public class DeploymentStack extends Stack {
+public class DruidStack extends Stack {
   private final NetworkNestedStack network;
   private final EksNestedStack eks;
   private final DruidNestedStack druid;
 
-  public DeploymentStack(Construct scope, DeploymentConf conf, StackProps props) {
+  public DruidStack(Construct scope, DruidReleaseConf conf, StackProps props) {
     super(scope, id("druid", conf.common().version()), props);
 
     this.network = new NetworkNestedStack(this, conf.common(), conf.vpc(),

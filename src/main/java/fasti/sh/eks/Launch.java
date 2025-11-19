@@ -4,14 +4,13 @@ import static fasti.sh.execute.serialization.Format.describe;
 import static fasti.sh.execute.serialization.Format.name;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import fasti.sh.eks.stack.DeploymentConf;
-import fasti.sh.eks.stack.DeploymentStack;
+import fasti.sh.eks.stack.DruidReleaseConf;
+import fasti.sh.eks.stack.DruidStack;
 import fasti.sh.execute.serialization.Mapper;
 import fasti.sh.execute.serialization.Template;
 import fasti.sh.model.aws.cdk.Synthesizer;
 import fasti.sh.model.main.Common;
-import fasti.sh.model.main.Hosted;
-import fasti.sh.model.main.common.Bare;
+import fasti.sh.model.main.Release;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,34 +28,34 @@ public class Launch {
 
     var conf = get(app);
 
-    new DeploymentStack(
-      app, conf.hosted(),
+    new DruidStack(
+      app, conf.release(),
       StackProps
         .builder()
-        .stackName(name(conf.hosted().common().id(), "druid"))
+        .stackName(name(conf.release().common().id(), "druid"))
         .env(
           Environment
             .builder()
-            .account(conf.hosted().common().account())
-            .region(conf.hosted().common().region())
+            .account(conf.release().common().account())
+            .region(conf.release().common().region())
             .build())
         .description(
           describe(
-            conf.host().common(),
+            conf.platform(),
             String
               .format(
                 "%s %s release",
-                conf.hosted().common().name(),
-                conf.hosted().common().alias())))
+                conf.release().common().name(),
+                conf.release().common().alias())))
         .synthesizer(synthesizer(app))
-        .tags(Common.Maps.from(conf.host().common().tags(), conf.hosted().common().tags()))
+        .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
         .build());
 
     app.synth();
   }
 
   @SneakyThrows
-  private static Hosted<Bare, DeploymentConf> get(App app) {
+  private static Release<DruidReleaseConf> get(App app) {
     var parsed = Template
       .parse(
         app,
@@ -65,7 +64,7 @@ public class Launch {
           .ofEntries(
             Map.entry("hosted:eks:druid:release", app.getNode().getContext("hosted:eks:druid:release").toString()),
             Map.entry("hosted:tags", tags(app))));
-    var type = new TypeReference<Hosted<Bare, DeploymentConf>>() {};
+    var type = new TypeReference<Release<DruidReleaseConf>>() {};
     return Mapper.get().readValue(parsed, type);
   }
 

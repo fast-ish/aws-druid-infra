@@ -5,7 +5,7 @@ import fasti.sh.model.aws.eks.KubernetesConf;
 import fasti.sh.model.aws.vpc.NetworkConf;
 import fasti.sh.model.main.Common;
 
-public record DeploymentConf(
+public record DruidReleaseConf(
   Common common,
   NetworkConf vpc,
   KubernetesConf eks,
