@@ -69,11 +69,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -98,11 +98,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -127,11 +127,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -156,11 +156,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -185,11 +185,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -214,11 +214,11 @@ alarms:
       "{{deployment:domain}}:managed-by": {{deployment:organization}}
       "{{deployment:domain}}:account": {{deployment:account}}
       "{{deployment:domain}}:region": {{deployment:region}}
-      "{{deployment:domain}}:name": {{deployment:name}}
-      "{{deployment:domain}}:alias": {{deployment:alias}}
+      "{{deployment:domain}}:name": {{deployment:team:name}}
+      "{{deployment:domain}}:alias": {{deployment:team:alias}}
       "{{deployment:domain}}:environment": {{deployment:environment}}
       "{{deployment:domain}}:version": {{deployment:version}}
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
@@ -1448,11 +1448,11 @@ dashboards:
       "{{deployment:domain}}:managed-by": "{{deployment:organization}}"
       "{{deployment:domain}}:account": "{{deployment:account}}"
       "{{deployment:domain}}:region": "{{deployment:region}}"
-      "{{deployment:domain}}:name": "{{deployment:name}}"
-      "{{deployment:domain}}:alias": "{{deployment:alias}}"
+      "{{deployment:domain}}:name": "{{deployment:team:name}}"
+      "{{deployment:domain}}:alias": "{{deployment:team:alias}}"
       "{{deployment:domain}}:environment": "{{deployment:environment}}"
       "{{deployment:domain}}:version": "{{deployment:version}}"
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}.eks"
+      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}.eks"
       {{#deployment:tags}}
       "{{key}}": "{{value}}"
       {{/deployment:tags}}
