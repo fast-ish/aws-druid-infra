@@ -58,7 +58,7 @@ public class DruidSetupNestedStack extends NestedStack {
     DruidAccessConstruct(Construct scope, Common common, DruidConf conf, ICluster cluster) {
       super(scope, "access");
 
-      var replace = Map.<String, Object>of("hosted:eks:druid:release", conf.chart().release());
+      var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
       var configuration = Mapper.get().readValue(Template.parse(scope, conf.access(), replace), Access.class);
 
       var oidc = cluster.getOpenIdConnectProvider();
@@ -76,7 +76,7 @@ public class DruidSetupNestedStack extends NestedStack {
     DruidSecretsConstruct(Construct scope, Common common, DruidConf conf) {
       super(scope, "secrets");
 
-      var replace = Map.<String, Object>of("hosted:eks:druid:release", conf.chart().release());
+      var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
       var configuration = Mapper.get().readValue(Template.parse(scope, conf.secrets(), replace), Secrets.class);
       this.admin = new SecretConstruct(this, common, configuration.admin()).secret();
       this.systemCredentials = new SecretConstruct(this, common, configuration.system()).secret();
@@ -94,7 +94,7 @@ public class DruidSetupNestedStack extends NestedStack {
     DruidStorageConstruct(Construct scope, Common common, DruidConf conf, Vpc vpc, ICluster cluster) {
       super(scope, "storage");
 
-      var replace = Map.<String, Object>of("hosted:eks:druid:release", conf.chart().release());
+      var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
       var configuration = Mapper.get().readValue(Template.parse(scope, conf.storage(), replace), Storage.class);
       this.rdsConstruct = new RdsConstruct(this, common, configuration.metadata(), vpc, List.of(cluster.getClusterSecurityGroup()));
       this.deepStorage = new BucketConstruct(this, common, configuration.deepStorage()).bucket();
@@ -112,7 +112,7 @@ public class DruidSetupNestedStack extends NestedStack {
     DruidIngestionConstruct(Construct scope, Common common, DruidConf conf, Vpc vpc, ICluster cluster) {
       super(scope, "ingestion");
 
-      var replace = Map.<String, Object>of("hosted:eks:druid:release", conf.chart().release());
+      var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
       var configuration = Mapper.get().readValue(Template.parse(scope, conf.ingestion(), replace), Ingestion.class);
       this.msk = new MskConstruct(this, common, configuration.kafka(), vpc, List.of(cluster.getClusterSecurityGroupId())).msk();
       this.mskServiceAccounts = configuration

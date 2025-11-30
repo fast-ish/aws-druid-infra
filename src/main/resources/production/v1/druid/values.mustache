@@ -1,13 +1,13 @@
-hostId: "{{host:id}}"
-hostedId: "{{hosted:id}}"
-account: "{{hosted:account}}"
-region: "{{hosted:region}}"
-environment: "{{hosted:environment}}"
-name: "{{hosted:name}}"
-alias: "{{hosted:alias}}"
-version: "{{hosted:version}}"
-domain: "{{hosted:domain}}"
-organization: "{{hosted:organization}}"
+hostId: "{{platform:id}}"
+hostedId: "{{deployment:id}}"
+account: "{{deployment:account}}"
+region: "{{deployment:region}}"
+environment: "{{deployment:environment}}"
+name: "{{deployment:name}}"
+alias: "{{deployment:alias}}"
+version: "{{deployment:version}}"
+domain: "{{deployment:domain}}"
+organization: "{{deployment:organization}}"
 
 image:
   tag: "34.0.0"
@@ -15,16 +15,16 @@ image:
   pullPolicy: Always
 
 labels:
-  "{{hosted:domain}}/account": "{{hosted:account}}"
-  "{{hosted:domain}}/region": "{{hosted:region}}"
-  "{{hosted:domain}}/billing": "{{hosted:organization}}"
-  "{{hosted:domain}}/version": "{{hosted:version}}"
-  "{{hosted:domain}}/resource-type": druid-helm-chart
-  "{{hosted:domain}}/category": compute.storage
-  "{{hosted:domain}}/type": analytics
-  "{{hosted:domain}}/id": "{{hosted:id}}"
-  "{{hosted:domain}}/name": "{{hosted:name}}"
-  "{{hosted:domain}}/part-of": "{{hosted:organization}}.{{hosted:name}}.{{hosted:alias}}"
+  "{{deployment:domain}}/account": "{{deployment:account}}"
+  "{{deployment:domain}}/region": "{{deployment:region}}"
+  "{{deployment:domain}}/billing": "{{deployment:organization}}"
+  "{{deployment:domain}}/version": "{{deployment:version}}"
+  "{{deployment:domain}}/resource-type": druid-helm-chart
+  "{{deployment:domain}}/category": compute.storage
+  "{{deployment:domain}}/type": analytics
+  "{{deployment:domain}}/id": "{{deployment:id}}"
+  "{{deployment:domain}}/name": "{{deployment:name}}"
+  "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
 
 annotations:
   "k8s.grafana.com/scrape": "true"
@@ -48,19 +48,19 @@ runtime: |-
   # authn/authz + default users
   # https://druid.apache.org/docs/latest/configuration/#authentication-and-authorization
   # https://druid.apache.org/docs/latest/operations/security-user-auth
-  druid.auth.authenticatorChain=["authn-{{hosted:id}}"]
-  druid.auth.authenticator.authn-{{hosted:id}}.type=basic
-  druid.auth.authorizer.authz-{{hosted:id}}.type=basic
-  druid.auth.authenticator.authn-{{hosted:id}}.skipOnFailure=false
-  druid.auth.authenticator.authn-{{hosted:id}}.credentialsValidator.type=metadata
-  druid.auth.authenticator.authn-{{hosted:id}}.authorizerName=authz-{{hosted:id}}
+  druid.auth.authenticatorChain=["authn-{{deployment:id}}"]
+  druid.auth.authenticator.authn-{{deployment:id}}.type=basic
+  druid.auth.authorizer.authz-{{deployment:id}}.type=basic
+  druid.auth.authenticator.authn-{{deployment:id}}.skipOnFailure=false
+  druid.auth.authenticator.authn-{{deployment:id}}.credentialsValidator.type=metadata
+  druid.auth.authenticator.authn-{{deployment:id}}.authorizerName=authz-{{deployment:id}}
   druid.escalator.type=basic
-  druid.escalator.authorizerName=authz-{{hosted:id}}
-  druid.auth.authorizers=["authz-{{hosted:id}}"]
-  druid.auth.authenticator.authn-{{hosted:id}}.initialAdminPassword=${env:DRUID_ADMIN_PASSWORD}
+  druid.escalator.authorizerName=authz-{{deployment:id}}
+  druid.auth.authorizers=["authz-{{deployment:id}}"]
+  druid.auth.authenticator.authn-{{deployment:id}}.initialAdminPassword=${env:DRUID_ADMIN_PASSWORD}
   druid.escalator.internalClientUsername=${env:DRUID_SYSTEM_USERNAME}
   druid.escalator.internalClientPassword=${env:DRUID_SYSTEM_PASSWORD}
-  druid.auth.authenticator.authn-{{hosted:id}}.initialInternalClientPassword=${env:DRUID_SYSTEM_PASSWORD}
+  druid.auth.authenticator.authn-{{deployment:id}}.initialInternalClientPassword=${env:DRUID_SYSTEM_PASSWORD}
 
   # tls
   # https://druid.apache.org/docs/latest/operations/security-overview
@@ -95,14 +95,14 @@ runtime: |-
   # https://druid.apache.org/docs/latest/development/extensions-core/kubernetes/
   druid.discovery.type=k8s
   druid.zk.service.enabled=false
-  druid.discovery.k8s.clusterIdentifier={{hosted:id}}
+  druid.discovery.k8s.clusterIdentifier={{deployment:id}}
 
   # index storage
   # https://druid.apache.org/docs/latest/configuration/#task-logging
   druid.indexer.logs.type=s3
   druid.indexer.logs.disableAcl=true
   druid.indexer.logs.s3Prefix=druid/indexing-logs
-  druid.indexer.logs.s3Bucket={{hosted:id}}-{{hosted:eks:druid:release}}-druid-indexlogs
+  druid.indexer.logs.s3Bucket={{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs
 
   # metadata storage
   # https://druid.apache.org/docs/latest/configuration/#metadata-storage
@@ -128,7 +128,7 @@ runtime: |-
   druid.storage.type=s3
   druid.storage.disableAcl=true
   druid.storage.baseKey=druid/segments
-  druid.storage.bucket={{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage
+  druid.storage.bucket={{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
 
   # multi-stage query durable storage
   # https://druid.apache.org/docs/latest/operations/durable-storage/
@@ -137,7 +137,7 @@ runtime: |-
   druid.msq.intermediate.storage.cleaner.enabled=true
   druid.msq.intermediate.storage.type=s3
   druid.msq.intermediate.storage.prefix=druid/msq
-  druid.msq.intermediate.storage.bucket={{hosted:id}}-{{hosted:eks:druid:release}}-druid-msq
+  druid.msq.intermediate.storage.bucket={{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq
 
   # monitoring
   # https://druid.apache.org/docs/latest/configuration/#enabling-metrics
@@ -153,7 +153,7 @@ runtime: |-
 
 env:
   - name: AWS_REGION
-    value: "{{hosted:region}}"
+    value: "{{deployment:region}}"
   - name: HOSTNAME
     valueFrom:
       fieldRef:
@@ -172,44 +172,44 @@ env:
   - name: DRUID_METADATA_STORAGE_USERNAME
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
         key: username
   - name: DRUID_METADATA_STORAGE_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
         key: password
   - name: DRUID_METADATA_STORAGE_DBNAME
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
         key: dbname
   - name: DRUID_METADATA_STORAGE_HOST
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
         key: host
   - name: DRUID_METADATA_STORAGE_CONNECT_URI
     value: jdbc:postgresql://$(DRUID_METADATA_STORAGE_HOST)/$(DRUID_METADATA_STORAGE_DBNAME)
   - name: DRUID_ADMIN_USERNAME
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-admin
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-admin
         key: username
   - name: DRUID_ADMIN_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-admin
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-admin
         key: password
   - name: DRUID_SYSTEM_USERNAME
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-system
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-system
         key: username
   - name: DRUID_SYSTEM_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-system
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-system
         key: password
 
 volumes:
@@ -217,10 +217,10 @@ volumes:
     emptyDir: { }
   - name: druid-common-conf
     configMap:
-      name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-common-conf
+      name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-common-conf
   - name: druid-tls
     secret:
-      secretName: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-tls
+      secretName: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-tls
       items:
         - key: client-keystore.p12
           path: client-keystore.p12
@@ -239,7 +239,7 @@ volumes:
       driver: secrets-store.csi.k8s.io
       readOnly: true
       volumeAttributes:
-        secretProviderClass: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-secretprovider
+        secretProviderClass: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-secretprovider
 
 volumeMounts:
   - mountPath: /opt/druid/conf/druid/cluster/_common
@@ -288,7 +288,7 @@ router:
   volumes:
     - name: druid-router-conf
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-router-conf
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-router-conf
   volumeMounts:
     - name: druid-router-conf
       mountPath: /opt/druid/conf/druid/cluster/query/router
@@ -348,7 +348,7 @@ broker:
   volumes:
     - name: druid-broker-conf
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-broker-conf
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-broker-conf
   volumeMounts:
     - name: druid-broker-conf
       mountPath: /opt/druid/conf/druid/cluster/query/broker
@@ -457,7 +457,7 @@ coordinator:
   volumes:
     - name: druid-coordinator-conf
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-coordinator-conf
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-coordinator-conf
   volumeMounts:
     - name: druid-coordinator-conf
       mountPath: /opt/druid/conf/druid/cluster/master/coordinator-overlord
@@ -540,11 +540,11 @@ overlord:
   volumes:
     - name: druid-overlord-conf
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-overlord-conf
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-overlord-conf
         defaultMode: 420
     - name: druid-task-template
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-task-base-template
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-task-base-template
         defaultMode: 420
   volumeMounts:
     - name: druid-overlord-conf
@@ -642,7 +642,7 @@ historical:
   volumes:
     - name: druid-historical-conf
       configMap:
-        name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-historical-conf
+        name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-historical-conf
   volumeMounts:
     - name: druid-historical-conf
       mountPath: /opt/druid/conf/druid/cluster/data/historical
@@ -720,7 +720,7 @@ task:
     volumes:
       - name: task-conf
         configMap:
-          name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-task-base-conf
+          name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-task-base-conf
           defaultMode: 420
     volumeMounts:
       - name: task-conf

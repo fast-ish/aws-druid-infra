@@ -1,88 +1,88 @@
 indexLogs:
-  name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-indexlogs
+  name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs
   accessControl: bucket_owner_full_control
   objectOwnership: bucket_owner_enforced
   removalPolicy: destroy
   autoDeleteObjects: true
   bucketPolicies:
-    - name: {{hosted:id}}-indexlogs
+    - name: {{deployment:id}}-indexlogs
       policy: policy/bucket-access.mustache
       principals:
         - type: arn
-          value: arn:aws:iam::{{hosted:account}}:role/{{hosted:id}}-{{hosted:eks:druid:release}}-druid-sa
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
       mappings:
         resources:
-          - "arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-indexlogs/*"
-          - "arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-indexlogs"
+          - "arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs/*"
+          - "arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs"
   lifecycleRules:
-    - id: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-indexlogs-expiration
+    - id: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs-expiration
       expiration: 1
       enabled: true
   tags:
-    "{{hosted:domain}}:resource-type": s3
-    "{{hosted:domain}}:category": storage
-    "{{hosted:domain}}:type": analytics
-    "{{hosted:domain}}:component": {{hosted:id}}-druid-indexlogs
-    "{{hosted:domain}}:part-of": "{{hosted:organization}}.{{hosted:name}}.{{hosted:alias}}"
+    "{{deployment:domain}}:resource-type": s3
+    "{{deployment:domain}}:category": storage
+    "{{deployment:domain}}:type": analytics
+    "{{deployment:domain}}:component": {{deployment:id}}-druid-indexlogs
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
 
 deepStorage:
-  name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage
+  name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
   accessControl: bucket_owner_full_control
   objectOwnership: bucket_owner_enforced
   removalPolicy: destroy
   autoDeleteObjects: true
   bucketPolicies:
-    - name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage
+    - name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
       policy: "policy/bucket-access.mustache"
       principals:
         - type: arn
-          value: arn:aws:iam::{{hosted:account}}:role/{{hosted:id}}-{{hosted:eks:druid:release}}-druid-sa
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
       mappings:
         resources:
-          - arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage/*
-          - arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage
+          - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage/*
+          - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
   lifecycleRules:
-    - id: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage-expiration
+    - id: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage-expiration
       expiration: 1
       enabled: true
   tags:
-    "{{hosted:domain}}:resource-type": s3
-    "{{hosted:domain}}:category": storage
-    "{{hosted:domain}}:type": analytics
-    "{{hosted:domain}}:component": {{hosted:id}}-druid-deepstorage
-    "{{hosted:domain}}:part-of": "{{hosted:organization}}.{{hosted:name}}.{{hosted:alias}}"
+    "{{deployment:domain}}:resource-type": s3
+    "{{deployment:domain}}:category": storage
+    "{{deployment:domain}}:type": analytics
+    "{{deployment:domain}}:component": {{deployment:id}}-druid-deepstorage
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
 
 multiStageQuery:
-  name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-msq
+  name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq
   accessControl: bucket_owner_full_control
   objectOwnership: bucket_owner_enforced
   removalPolicy: destroy
   autoDeleteObjects: true
   bucketPolicies:
-    - name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-deepstorage
+    - name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
       policy: policy/bucket-access.mustache
       principals:
         - type: arn
-          value: arn:aws:iam::{{hosted:account}}:role/{{hosted:id}}-{{hosted:eks:druid:release}}-druid-sa
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
       mappings:
         resources:
-          - arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-msq/*
-          - arn:aws:s3:::{{hosted:id}}-{{hosted:eks:druid:release}}-druid-msq
+          - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq/*
+          - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq
   lifecycleRules:
-    - id: "{{hosted:id}}-{{hosted:eks:druid:release}}-druid-msq-expiration"
+    - id: "{{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq-expiration"
       expiration: 1
       enabled: true
   tags:
-    "{{hosted:domain}}:resource-type": s3
-    "{{hosted:domain}}:category": storage
-    "{{hosted:domain}}:type": analytics
-    "{{hosted:domain}}:component": {{hosted:id}}-druid-multi-stage-query
-    "{{hosted:domain}}:part-of": "{{hosted:organization}}.{{hosted:name}}.{{hosted:alias}}"
+    "{{deployment:domain}}:resource-type": s3
+    "{{deployment:domain}}:category": storage
+    "{{deployment:domain}}:type": analytics
+    "{{deployment:domain}}:component": {{deployment:id}}-druid-multi-stage-query
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
 
 metadata:
-  name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+  name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
   credentials:
-    name: {{hosted:id}}-{{hosted:eks:druid:release}}-druid-metadata
+    name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
     description: "druid deep storage rds username & password"
     username: druid_metadata_admin
     password:
@@ -117,8 +117,8 @@ metadata:
   deletionProtection: false
   enableDataApi: true
   tags:
-    "{{hosted:domain}}:resource-type": rds
-    "{{hosted:domain}}:category": storage
-    "{{hosted:domain}}:type": metadata
-    "{{hosted:domain}}:component": {{hosted:id}}-druid-metadata
-    "{{hosted:domain}}:part-of": "{{hosted:organization}}.{{hosted:name}}.{{hosted:alias}}"
+    "{{deployment:domain}}:resource-type": rds
+    "{{deployment:domain}}:category": storage
+    "{{deployment:domain}}:type": metadata
+    "{{deployment:domain}}:component": {{deployment:id}}-druid-metadata
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"

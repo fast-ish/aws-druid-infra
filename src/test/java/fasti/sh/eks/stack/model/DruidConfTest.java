@@ -1043,7 +1043,7 @@ public class DruidConfTest {
     String[] metadataStores = {
       "postgresql://metadata.druid.internal:5432/druid",
       "mysql://metadata.druid.internal:3306/druid",
-      "derby://localhost:1527/var/druid/metadata.db",
+      "derby://localplatform:1527/var/druid/metadata.db",
       "postgres://rds.amazonaws.com:5432/druidmetadata"
     };
 

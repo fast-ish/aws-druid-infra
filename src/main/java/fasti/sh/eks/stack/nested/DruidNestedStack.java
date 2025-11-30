@@ -26,7 +26,7 @@ public class DruidNestedStack extends NestedStack {
 
     this.setupStack = new DruidSetupNestedStack(this, common, conf, vpc, cluster);
 
-    var replace = Map.<String, Object>of("hosted:eks:druid:release", conf.chart().release());
+    var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
     var yaml = Template.parse(scope, conf.chart().values(), replace);
     var values = Mapper.get().readValue(yaml, new TypeReference<Map<String, Object>>() {});
 
