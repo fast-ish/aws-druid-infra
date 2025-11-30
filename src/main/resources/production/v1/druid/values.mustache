@@ -3,8 +3,8 @@ hostedId: "{{deployment:id}}"
 account: "{{deployment:account}}"
 region: "{{deployment:region}}"
 environment: "{{deployment:environment}}"
-name: "{{deployment:name}}"
-alias: "{{deployment:alias}}"
+name: "{{deployment:team:name}}"
+alias: "{{deployment:team:alias}}"
 version: "{{deployment:version}}"
 domain: "{{deployment:domain}}"
 organization: "{{deployment:organization}}"
@@ -23,8 +23,8 @@ labels:
   "{{deployment:domain}}/category": compute.storage
   "{{deployment:domain}}/type": analytics
   "{{deployment:domain}}/id": "{{deployment:id}}"
-  "{{deployment:domain}}/name": "{{deployment:name}}"
-  "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
+  "{{deployment:domain}}/name": "{{deployment:team:name}}"
+  "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
 
 annotations:
   "k8s.grafana.com/scrape": "true"

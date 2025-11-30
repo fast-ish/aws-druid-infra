@@ -23,7 +23,7 @@ indexLogs:
     "{{deployment:domain}}:category": storage
     "{{deployment:domain}}:type": analytics
     "{{deployment:domain}}:component": {{deployment:id}}-druid-indexlogs
-    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
 
 deepStorage:
   name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage
@@ -50,7 +50,7 @@ deepStorage:
     "{{deployment:domain}}:category": storage
     "{{deployment:domain}}:type": analytics
     "{{deployment:domain}}:component": {{deployment:id}}-druid-deepstorage
-    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
 
 multiStageQuery:
   name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq
@@ -77,7 +77,7 @@ multiStageQuery:
     "{{deployment:domain}}:category": storage
     "{{deployment:domain}}:type": analytics
     "{{deployment:domain}}:component": {{deployment:id}}-druid-multi-stage-query
-    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
 
 metadata:
   name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-metadata
@@ -121,4 +121,4 @@ metadata:
     "{{deployment:domain}}:category": storage
     "{{deployment:domain}}:type": metadata
     "{{deployment:domain}}:component": {{deployment:id}}-druid-metadata
-    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:name}}.{{deployment:alias}}"
+    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
