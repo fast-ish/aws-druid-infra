@@ -165,20 +165,20 @@ public class StorageTest {
 
     // Test with complex RDS metadata configuration
     String complexYaml = """
-      metadata:
-        name: druid-metadata-prod
-        databaseName: druid
-        version: "14.7"
-        storageType: gp3
-        deletionProtection: true
-        enableDataApi: false
-        tags:
-          Environment: production
-          Component: metadata
-      deepStorage: null
-      indexLogs: null
-      multiStageQuery: null
-    """;
+        metadata:
+          name: druid-metadata-prod
+          databaseName: druid
+          version: "14.7"
+          storageType: gp3
+          deletionProtection: true
+          enableDataApi: false
+          tags:
+            Environment: production
+            Component: metadata
+        deepStorage: null
+        indexLogs: null
+        multiStageQuery: null
+      """;
 
     var storage = mapper.readValue(complexYaml, Storage.class);
     assertNotNull(storage);
@@ -188,24 +188,24 @@ public class StorageTest {
     assertNull(storage.multiStageQuery());
   }
 
-
   @Test
   public void testInvalidYamlDeserializationWithWrongTypes() throws Exception {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     // Test with invalid YAML where storage components have wrong types
     String invalidYaml = """
-      metadata: [invalid, array, type]
-      deepStorage: "wrong-type"
-      indexLogs: 12345
-      multiStageQuery: true
-    """;
+        metadata: [invalid, array, type]
+        deepStorage: "wrong-type"
+        indexLogs: 12345
+        multiStageQuery: true
+      """;
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(invalidYaml, Storage.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(invalidYaml, Storage.class);
+      });
   }
-
 
   @Test
   public void testComparisonBetweenDifferentStorageConfigurations() {
@@ -242,13 +242,13 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-storage-encrypted
-      indexLogs:
-        name: druid-logs-encrypted
-      multiStageQuery:
-        name: druid-msq-encrypted
-    """;
+        deepStorage:
+          name: druid-storage-encrypted
+        indexLogs:
+          name: druid-logs-encrypted
+        multiStageQuery:
+          name: druid-msq-encrypted
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -259,11 +259,11 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-deep-storage-lifecycle
-      indexLogs:
-        name: druid-logs-lifecycle
-    """;
+        deepStorage:
+          name: druid-deep-storage-lifecycle
+        indexLogs:
+          name: druid-logs-lifecycle
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -274,9 +274,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-storage-replicated
-    """;
+        deepStorage:
+          name: druid-storage-replicated
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -286,12 +286,12 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-metadata-multiaz
-        databaseName: druid
-        version: "14.7"
-        deletionProtection: true
-    """;
+        metadata:
+          name: druid-metadata-multiaz
+          databaseName: druid
+          version: "14.7"
+          deletionProtection: true
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -303,10 +303,10 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-metadata-rr
-        databaseName: druid
-    """;
+        metadata:
+          name: druid-metadata-rr
+          databaseName: druid
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -316,11 +316,11 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-metadata-backup
-        databaseName: druid
-        version: "14.7"
-    """;
+        metadata:
+          name: druid-metadata-backup
+          databaseName: druid
+          version: "14.7"
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -332,10 +332,10 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-aurora-serverless-v1
-        databaseName: druid
-    """;
+        metadata:
+          name: druid-aurora-serverless-v1
+          databaseName: druid
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -345,10 +345,10 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-aurora-serverless-v2
-        databaseName: druid
-    """;
+        metadata:
+          name: druid-aurora-serverless-v2
+          databaseName: druid
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -358,9 +358,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-segments
-    """;
+        deepStorage:
+          name: druid-segments
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -372,9 +372,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-segment-cache
-    """;
+        deepStorage:
+          name: druid-segment-cache
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -384,9 +384,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-compacted-segments
-    """;
+        deepStorage:
+          name: druid-compacted-segments
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -410,9 +410,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-glacier-storage
-    """;
+        deepStorage:
+          name: druid-glacier-storage
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -422,9 +422,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-s3select-optimized
-    """;
+        deepStorage:
+          name: druid-s3select-optimized
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -435,11 +435,11 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-crr-enabled
-      indexLogs:
-        name: druid-logs-crr
-    """;
+        deepStorage:
+          name: druid-crr-enabled
+        indexLogs:
+          name: druid-logs-crr
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -450,9 +450,9 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      deepStorage:
-        name: druid-object-lock
-    """;
+        deepStorage:
+          name: druid-object-lock
+      """;
 
     assertDoesNotThrow(() -> mapper.readValue(yaml, Storage.class));
   }
@@ -498,19 +498,19 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-metadata-complete
-        databaseName: druid
-        version: "14.7"
-        storageType: gp3
-        deletionProtection: true
-      deepStorage:
-        name: druid-deep-storage-prod
-      indexLogs:
-        name: druid-index-logs-prod
-      multiStageQuery:
-        name: druid-msq-prod
-    """;
+        metadata:
+          name: druid-metadata-complete
+          databaseName: druid
+          version: "14.7"
+          storageType: gp3
+          deletionProtection: true
+        deepStorage:
+          name: druid-deep-storage-prod
+        indexLogs:
+          name: druid-index-logs-prod
+        multiStageQuery:
+          name: druid-msq-prod
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -525,10 +525,10 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: druid-metadata-only
-        databaseName: druid
-    """;
+        metadata:
+          name: druid-metadata-only
+          databaseName: druid
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
     assertNotNull(storage);
@@ -647,16 +647,16 @@ public class StorageTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yaml = """
-      metadata:
-        name: metadata-db
-        databaseName: druid
-      deepStorage:
-        name: deep-storage-bucket
-      indexLogs:
-        name: index-logs-bucket
-      multiStageQuery:
-        name: msq-bucket
-    """;
+        metadata:
+          name: metadata-db
+          databaseName: druid
+        deepStorage:
+          name: deep-storage-bucket
+        indexLogs:
+          name: index-logs-bucket
+        multiStageQuery:
+          name: msq-bucket
+      """;
 
     var storage = mapper.readValue(yaml, Storage.class);
 
