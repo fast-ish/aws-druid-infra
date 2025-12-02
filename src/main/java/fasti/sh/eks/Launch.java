@@ -16,10 +16,8 @@ import java.util.List;
 import java.util.Map;
 import lombok.SneakyThrows;
 import software.amazon.awscdk.App;
-import software.amazon.awscdk.DefaultStackSynthesizer;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
-import software.amazon.awscdk.StackSynthesizer;
 
 public class Launch {
   public static void main(final String[] args) {
@@ -46,7 +44,6 @@ public class Launch {
                 "%s %s release",
                 conf.release().common().name(),
                 conf.release().common().alias())))
-        .synthesizer(synthesizer(app))
         .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
         .build());
 
@@ -67,10 +64,6 @@ public class Launch {
     return Mapper.get().readValue(parsed, type);
   }
 
-  private static StackSynthesizer synthesizer(App app) {
-    return DefaultStackSynthesizer.Builder.create().build();
-  }
-
   private static ArrayList<Map<String, String>> tags(App app) {
     var tags = app.getNode().getContext("deployment:tags");
     var results = new ArrayList<Map<String, String>>();
@@ -89,18 +82,5 @@ public class Launch {
     }
 
     return results;
-  }
-
-  public static String arnToBucketName(String arn) {
-    if (arn != null && arn.startsWith("arn:aws:s3::")) {
-      var parts = arn.split(":");
-      var resourcePart = parts[parts.length - 1];
-      if (resourcePart.startsWith("/")) {
-        resourcePart = resourcePart.substring(1);
-      }
-      var resourceParts = resourcePart.split("/");
-      return resourceParts[0];
-    }
-    return null;
   }
 }
