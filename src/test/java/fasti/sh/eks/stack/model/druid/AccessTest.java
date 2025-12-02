@@ -51,8 +51,10 @@ public class AccessTest {
     // Verify that component type is correct
     var recordComponents = Access.class.getRecordComponents();
 
-    assertEquals(ServiceAccountConf.class, recordComponents[0].getType(),
-        "serviceAccount should be of type ServiceAccountConf");
+    assertEquals(
+      ServiceAccountConf.class,
+      recordComponents[0].getType(),
+      "serviceAccount should be of type ServiceAccountConf");
   }
 
   @Test
@@ -117,9 +119,11 @@ public class AccessTest {
     // Test with invalid YAML structure
     String invalidYaml = "serviceAccount: [invalid, structure, here]";
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(invalidYaml, Access.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(invalidYaml, Access.class);
+      });
   }
 
   @Test
@@ -129,11 +133,12 @@ public class AccessTest {
     // Test with malformed YAML
     String malformedYaml = "serviceAccount:\n  - invalid:\n    nested: [[[";
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(malformedYaml, Access.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(malformedYaml, Access.class);
+      });
   }
-
 
   @Test
   public void testComparisonBetweenDifferentConfigurations() {
@@ -162,7 +167,6 @@ public class AccessTest {
     String serialized = mapper.writeValueAsString(access);
     assertNotNull(serialized);
   }
-
 
   @Test
   public void testSerializationPreservesNullValues() throws Exception {
@@ -366,9 +370,11 @@ public class AccessTest {
       serviceAccount: null
       extraField: should-cause-error
       """;
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(yamlWithExtra, Access.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(yamlWithExtra, Access.class);
+      });
   }
 
   @Test
@@ -402,9 +408,10 @@ public class AccessTest {
         role:
           name: DruidIRSARole
       """;
-    assertDoesNotThrow(() -> {
-      mapper.readValue(irsaYaml, Access.class);
-    });
+    assertDoesNotThrow(
+      () -> {
+        mapper.readValue(irsaYaml, Access.class);
+      });
   }
 
   // ==================== Extended Comprehensive Tests (30+ Additional) ====================

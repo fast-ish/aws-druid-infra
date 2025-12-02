@@ -137,7 +137,6 @@ public class IngestionTest {
 
   // ==================== Additional Comprehensive Tests ====================
 
-
   @Test
   public void testInvalidYamlDeserializationWithWrongType() throws Exception {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -145,9 +144,11 @@ public class IngestionTest {
     // Test with invalid YAML where kafka is a string instead of object
     String invalidYaml = "kafka: invalid-string-value";
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(invalidYaml, Ingestion.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(invalidYaml, Ingestion.class);
+      });
   }
 
   @Test
@@ -157,11 +158,12 @@ public class IngestionTest {
     // Test with completely malformed YAML
     String malformedYaml = "kafka: {\nname: [invalid nested";
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(malformedYaml, Ingestion.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(malformedYaml, Ingestion.class);
+      });
   }
-
 
   @Test
   public void testComparisonBetweenDifferentConfigurations() {
@@ -175,7 +177,6 @@ public class IngestionTest {
     // Verify consistent toString output
     assertEquals(ingestion1.toString(), ingestion2.toString());
   }
-
 
   @Test
   public void testSerializationPreservesNullKafka() throws Exception {
@@ -426,9 +427,11 @@ public class IngestionTest {
       extraField: should-cause-error
       """;
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(yamlWithExtra, Ingestion.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(yamlWithExtra, Ingestion.class);
+      });
   }
 
   @Test
@@ -466,9 +469,10 @@ public class IngestionTest {
         name: monitored-cluster
       """;
 
-    assertDoesNotThrow(() -> {
-      mapper.readValue(monitoringYaml, Ingestion.class);
-    });
+    assertDoesNotThrow(
+      () -> {
+        mapper.readValue(monitoringYaml, Ingestion.class);
+      });
   }
 
   // ==================== Extended Comprehensive Tests (30+ Additional) ====================

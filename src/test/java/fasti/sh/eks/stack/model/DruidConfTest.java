@@ -132,8 +132,7 @@ public class DruidConfTest {
       "storage@v1.yaml",
       "ingestion.config.yaml",
       "asset/druid-helm.tgz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().contains("/"));
@@ -205,8 +204,7 @@ public class DruidConfTest {
       "config/prod/storage-multiregion.yaml",
       "config/prod/ingestion-kafka-streams.yaml",
       "helm/charts/druid-0.8.0.tgz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertEquals("config/prod/access-v2.yaml", druidConf.access());
@@ -231,8 +229,7 @@ public class DruidConfTest {
         "config/" + env + "/storage.yaml",
         "config/" + env + "/ingestion.yaml",
         "helm/" + env + "/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(druidConf);
       assertTrue(druidConf.access().contains(env));
@@ -276,8 +273,7 @@ public class DruidConfTest {
       "https://example.com/storage.yaml",
       "file:///var/config/ingestion.yaml",
       "oci://registry/helm/druid:1.0.0",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().startsWith("s3://"));
@@ -295,8 +291,7 @@ public class DruidConfTest {
       "storage-full",
       "ingestion-full",
       "asset-full",
-      null
-    );
+      null);
 
     String yaml = mapper.writeValueAsString(original);
     assertNotNull(yaml);
@@ -335,8 +330,7 @@ public class DruidConfTest {
       "storage.properties",
       "ingestion.conf",
       "druid-chart.tar.gz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().endsWith(".yml"));
@@ -354,8 +348,7 @@ public class DruidConfTest {
       "config/storage-v1.5.0-beta.yaml",
       "config/ingestion-v3.0.0-rc1.yaml",
       "helm/druid-0.28.0.tgz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().contains("v1.2.3"));
@@ -380,8 +373,7 @@ public class DruidConfTest {
       complexStoragePath,
       complexIngestionPath,
       complexAssetPath,
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().contains("production"));
@@ -419,8 +411,7 @@ public class DruidConfTest {
       "config/한국어/storage.yaml",
       "config/العربية/ingestion.yaml",
       "helm/русский/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().contains("日本語"));
@@ -459,8 +450,7 @@ public class DruidConfTest {
       "component-storage",
       "component-ingestion",
       "component-asset",
-      null
-    );
+      null);
 
     // Verify each component is independent
     assertNotNull(druidConf.access());
@@ -495,8 +485,7 @@ public class DruidConfTest {
       "\\\\network\\share\\storage.yaml",
       "E:\\ingestion\\config.yaml",
       "F:\\helm\\druid-chart.tgz",
-      null
-    );
+      null);
 
     assertNotNull(druidConf);
     assertTrue(druidConf.access().contains("C:"));
@@ -520,8 +509,7 @@ public class DruidConfTest {
         "s3://storage-" + i + "/deep-storage/config.yaml",
         "kafka://broker-" + i + ".internal:9092/ingestion.yaml",
         "oci://registry.io/druid/chart:" + i + ".0.0",
-        null
-      );
+        null);
 
       assertNotNull(druidConf);
       String yaml = mapper.writeValueAsString(druidConf);
@@ -547,8 +535,7 @@ public class DruidConfTest {
               "storage-" + index + "-" + j,
               "ingestion-" + index + "-" + j,
               "asset-" + index + "-" + j,
-              null
-            );
+              null);
             String yaml = mapper.writeValueAsString(conf);
             var loaded = mapper.readValue(yaml, DruidConf.class);
             assertEquals(conf, loaded);
@@ -574,8 +561,7 @@ public class DruidConfTest {
       "config/storage-v1.5.0.yaml",
       "config/ingestion-v3.0.0.yaml",
       "helm/druid-0.28.0.tgz",
-      null
-    );
+      null);
 
     var conf2 = new DruidConf(
       "config/access-v1.0.0.yaml",
@@ -583,8 +569,7 @@ public class DruidConfTest {
       "config/storage-v1.0.0.yaml",
       "config/ingestion-v1.0.0.yaml",
       "helm/druid-0.28.0.tgz",
-      null
-    );
+      null);
 
     assertNotEquals(conf1, conf2);
     assertTrue(conf1.secrets().contains("v2.0.0"));
@@ -604,8 +589,7 @@ public class DruidConfTest {
         "storage-" + i + ".yaml",
         "ingestion-" + i + ".yaml",
         "asset-" + i + ".tgz",
-        null
-      );
+        null);
       configurations.add(conf);
 
       // Verify serialization for every 100th element
@@ -644,8 +628,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         "config/ingestion.yaml",
         "helm/druid-with-" + ext + ".tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(ext));
@@ -658,12 +641,12 @@ public class DruidConfTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yamlWithCustomProps = """
-      access: config/access.yaml?customProp1=value1&customProp2=value2
-      secrets: config/secrets.yaml?encrypted=true
-      storage: config/storage.yaml?compression=lz4
-      ingestion: config/ingestion.yaml?batchSize=10000
-      asset: helm/druid.tgz?override=production
-    """;
+        access: config/access.yaml?customProp1=value1&customProp2=value2
+        secrets: config/secrets.yaml?encrypted=true
+        storage: config/storage.yaml?compression=lz4
+        ingestion: config/ingestion.yaml?batchSize=10000
+        asset: helm/druid.tgz?override=production
+      """;
 
     var conf = mapper.readValue(yamlWithCustomProps, DruidConf.class);
     assertNotNull(conf);
@@ -690,8 +673,7 @@ public class DruidConfTest {
         "config/" + env + "/storage.yaml",
         "config/" + env + "/ingestion.yaml",
         "helm/" + env + "/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(env));
@@ -714,8 +696,7 @@ public class DruidConfTest {
       veryLongPath,
       veryLongPath,
       veryLongPath,
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().length() >= 10000, "String should be at least 10000 characters");
@@ -735,8 +716,7 @@ public class DruidConfTest {
       "config/storage.yaml?maxConnections=1000",
       "config/ingestion.yaml?batchSize=50000&port=9092",
       "helm/druid.tgz?replicas=10",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("port=8888"));
@@ -754,8 +734,7 @@ public class DruidConfTest {
       "s3://us-west-2-bucket/storage?replication=cross-region",
       "kafka://us-east-1.kafka.internal:9092/ingestion",
       "oci://us-east-1.ecr.aws/druid/chart:1.0.0",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("us-east-1"));
@@ -775,8 +754,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     var conf2 = new DruidConf(
       "config/access.yaml?ref=conf1",
@@ -784,8 +762,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotEquals(conf1, conf2);
     assertTrue(conf1.access().contains("ref=conf2"));
@@ -805,8 +782,7 @@ public class DruidConfTest {
       "s3://bucket/storage.yaml.gpg",
       "config/ingestion.yaml.encrypted",
       "oci://registry/druid:1.0.0?signature=verified",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().startsWith("encrypted://"));
@@ -826,8 +802,7 @@ public class DruidConfTest {
       "config/storage.yaml?tier=glacier&lifecycle=enabled",
       "config/ingestion.yaml?protocol=ssl&auth=sasl",
       "helm/druid.tgz?values=production.yaml&timeout=600",
-      null
-    );
+      null);
 
     assertNotNull(conf);
 
@@ -862,8 +837,7 @@ public class DruidConfTest {
         protocol + "config/storage.yaml",
         protocol + "config/ingestion.yaml",
         protocol + "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().startsWith(protocol));
@@ -881,8 +855,7 @@ public class DruidConfTest {
       "config/storage.yaml#sha1:ghi789",
       "config/ingestion.yaml#sha512:jkl012",
       "helm/druid.tgz#checksum:mno345",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("#sha256:"));
@@ -907,8 +880,7 @@ public class DruidConfTest {
         "config/storage.yaml" + format,
         "config/ingestion.yaml" + format,
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().endsWith(format));
@@ -926,8 +898,7 @@ public class DruidConfTest {
       "s3://${BUCKET_NAME}/storage.yaml",
       "kafka://${KAFKA_BROKERS}/ingestion.yaml",
       "oci://${REGISTRY}/${REPO}:${TAG}",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("${ENVIRONMENT}"));
@@ -947,18 +918,20 @@ public class DruidConfTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yamlWithExtra = """
-      access: config/access.yaml
-      secrets: config/secrets.yaml
-      storage: config/storage.yaml
-      ingestion: config/ingestion.yaml
-      asset: helm/druid.tgz
-      extraField1: should-cause-error
-    """;
+        access: config/access.yaml
+        secrets: config/secrets.yaml
+        storage: config/storage.yaml
+        ingestion: config/ingestion.yaml
+        asset: helm/druid.tgz
+        extraField1: should-cause-error
+      """;
 
     // By default, Jackson will throw UnrecognizedPropertyException for unknown fields
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(yamlWithExtra, DruidConf.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(yamlWithExtra, DruidConf.class);
+      });
   }
 
   @Test
@@ -973,8 +946,7 @@ public class DruidConfTest {
         "s3://druid-storage-prod-" + i + "/deep-storage/config.yaml",
         "kafka://broker-" + i + ".prod.internal:9092/topics/druid-ingest/config",
         "oci://registry.example.com/druid/helm-charts/druid:v0.28." + i + "-prod",
-        null
-      );
+        null);
 
       String yaml = mapper.writeValueAsString(conf);
       var deserialized = mapper.readValue(yaml, DruidConf.class);
@@ -1004,8 +976,7 @@ public class DruidConfTest {
         "config/storage-" + size[0] + ".yaml?instanceType=" + size[1] + "&replicas=" + size[2],
         "config/ingestion-" + size[0] + ".yaml?memory=" + size[3],
         "helm/druid-" + size[0] + ".tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(size[0]));
@@ -1030,8 +1001,7 @@ public class DruidConfTest {
         "config/storage.yaml?deepStorage=" + storage,
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.storage().contains("deepStorage="));
@@ -1054,8 +1024,7 @@ public class DruidConfTest {
         "config/storage.yaml?metadata=" + metadata,
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.storage().contains("metadata="));
@@ -1079,8 +1048,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         config,
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.ingestion().contains("ingestion-"));
@@ -1095,8 +1063,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml?queryPoolSize=100",
       "helm/druid.tgz?queryCache=enabled",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("maxQueryTimeout"));
@@ -1120,8 +1087,7 @@ public class DruidConfTest {
         cacheConfig,
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.storage().contains("cache="));
@@ -1136,8 +1102,7 @@ public class DruidConfTest {
       "config/storage.yaml?coordinatorPeriod=PT30S",
       "config/ingestion.yaml",
       "helm/druid-coordinator.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("coordinator"));
@@ -1152,8 +1117,7 @@ public class DruidConfTest {
       "config/storage.yaml?taskQueueSize=1000",
       "config/ingestion-overlord.yaml?maxPendingTasks=100",
       "helm/druid-overlord.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("overlord"));
@@ -1169,8 +1133,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml?queryCache=enabled&cacheSize=2Gi",
       "helm/druid-broker.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("broker"));
@@ -1186,8 +1149,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid-router.tgz?replicas=3",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("router"));
@@ -1202,8 +1164,7 @@ public class DruidConfTest {
       "config/storage.yaml?segmentCacheSize=100Gi&maxSegmentsToLoad=1000",
       "config/ingestion.yaml",
       "helm/druid-historical.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("historical"));
@@ -1219,8 +1180,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion-mm.yaml?workerCapacity=10&numThreads=4",
       "helm/druid-middlemanager.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("middlemanager"));
@@ -1235,8 +1195,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion-peon.yaml?javaOpts=-Xmx2g",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("peon"));
@@ -1251,8 +1210,7 @@ public class DruidConfTest {
       "config/storage.yaml?numLoadingThreads=12&queueSize=500",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.storage().contains("numLoadingThreads"));
@@ -1267,8 +1225,7 @@ public class DruidConfTest {
       "config/storage.yaml?compaction=enabled&targetPartitionSize=5000000",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.storage().contains("compaction=enabled"));
@@ -1291,8 +1248,7 @@ public class DruidConfTest {
         policy,
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.storage().contains("retention="));
@@ -1307,8 +1263,7 @@ public class DruidConfTest {
       "config/storage.yaml?loadRules=forever&replicants=2",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.storage().contains("loadRules"));
@@ -1327,8 +1282,7 @@ public class DruidConfTest {
         "storage-" + i,
         "ingestion-" + i,
         "asset-" + i,
-        null
-      );
+        null);
       configurations.add(conf);
 
       if (i % 1000 == 0) {
@@ -1359,8 +1313,7 @@ public class DruidConfTest {
               "storage-" + index + "-" + j,
               "ingestion-" + index + "-" + j,
               "asset-" + index + "-" + j,
-              null
-            );
+              null);
             String yaml = mapper.writeValueAsString(conf);
             var loaded = mapper.readValue(yaml, DruidConf.class);
             assertEquals(conf, loaded);
@@ -1395,8 +1348,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains("extensions="));
@@ -1425,8 +1377,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         "config/ingestion.yaml",
         "helm/druid-with-" + extension + ".tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(extension));
@@ -1453,8 +1404,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(prop));
@@ -1469,8 +1419,7 @@ public class DruidConfTest {
       "config/storage.yaml?druid.segmentCache.locations=/var/druid/segment-cache",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.storage().contains("segmentCache"));
@@ -1484,8 +1433,7 @@ public class DruidConfTest {
       "config/storage.yaml?druid.processing.numThreads=16",
       "config/ingestion.yaml?druid.processing.numMergeBuffers=4",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("processing.buffer"));
@@ -1501,8 +1449,7 @@ public class DruidConfTest {
       "config/storage.yaml?druid.server.maxSize=10737418240",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("server.http.numThreads"));
@@ -1517,8 +1464,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("monitoring.monitors"));
@@ -1540,8 +1486,7 @@ public class DruidConfTest {
         "config/storage.yaml",
         "config/ingestion.yaml",
         "helm/druid.tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains("emitter"));
@@ -1556,8 +1501,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("request.logging"));
@@ -1571,8 +1515,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("auth.authenticatorChain"));
@@ -1587,8 +1530,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("enableTlsPort"));
@@ -1603,8 +1545,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("startup.logging"));
@@ -1618,8 +1559,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("lookup.enableLookupSyncOnStartup"));
@@ -1633,8 +1573,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml?druid.sql.planner.maxQueryCount=10",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("sql.enable"));
@@ -1649,8 +1588,7 @@ public class DruidConfTest {
       "config/storage.yaml?druid.coordinator.period=PT60S",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("coordinator.balancer"));
@@ -1665,8 +1603,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml?druid.indexer.fork.property.druid.processing.numThreads=8",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.ingestion().contains("indexer.fork"));
@@ -1680,8 +1617,7 @@ public class DruidConfTest {
       "config/storage.yaml",
       "config/ingestion.yaml?druid.worker.capacity=10&druid.worker.ip=10.0.0.1",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.ingestion().contains("worker.capacity"));
@@ -1702,8 +1638,7 @@ public class DruidConfTest {
         "config/storage-" + nodeType + ".yaml",
         "config/ingestion-" + nodeType + ".yaml",
         "helm/druid-" + nodeType + ".tgz",
-        null
-      );
+        null);
 
       assertNotNull(conf);
       assertTrue(conf.access().contains(nodeType));
@@ -1718,8 +1653,7 @@ public class DruidConfTest {
       "config/storage-ha.yaml?multiAZ=true&replicationFactor=3",
       "config/ingestion.yaml",
       "helm/druid-ha.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("replicas=3"));
@@ -1734,8 +1668,7 @@ public class DruidConfTest {
       "config/storage-dr.yaml?crossRegionReplication=true&backupRegion=us-west-2",
       "config/ingestion-dr.yaml",
       "helm/druid-dr.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.storage().contains("crossRegionReplication"));
@@ -1749,8 +1682,7 @@ public class DruidConfTest {
       "config/storage.yaml?tenantIsolation=namespace",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("multitenancy"));
@@ -1765,8 +1697,7 @@ public class DruidConfTest {
       "config/storage.yaml?memory.request=16Gi&memory.limit=32Gi",
       "config/ingestion.yaml",
       "helm/druid.tgz",
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().contains("cpu.request"));
@@ -1784,8 +1715,7 @@ public class DruidConfTest {
       veryLongPath,
       veryLongPath,
       veryLongPath,
-      null
-    );
+      null);
 
     assertNotNull(conf);
     assertTrue(conf.access().length() > 1700, "Path length is: " + conf.access().length());

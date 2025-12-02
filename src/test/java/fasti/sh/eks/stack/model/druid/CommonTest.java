@@ -46,12 +46,11 @@ public class CommonTest {
   public void testCommonAccessorMethods() {
     // Test that Common properly stores and retrieves String values
     var common = new Common(
-        "production",
-        "jvm.config",
-        "log4j.properties",
-        "metrics.yaml",
-        "runtime.properties"
-    );
+      "production",
+      "jvm.config",
+      "log4j.properties",
+      "metrics.yaml",
+      "runtime.properties");
 
     assertNotNull(common);
     assertEquals("production", common.env());
@@ -160,8 +159,7 @@ public class CommonTest {
       "config/jvm-server.conf",
       "log4j2.xml",
       "metrics@v1.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.env().contains("-"));
@@ -314,8 +312,7 @@ public class CommonTest {
       "config/jvm/server-optimized.conf",
       "config/logging/log4j2-async.xml",
       "config/metrics/prometheus-detailed.yaml",
-      "config/runtime/druid-production.properties"
-    );
+      "config/runtime/druid-production.properties");
 
     String yaml = mapper.writeValueAsString(original);
     assertNotNull(yaml);
@@ -354,8 +351,7 @@ public class CommonTest {
       "s3://config-bucket/jvm/production.conf",
       "https://config-server.example.com/log4j2.xml",
       "consul://metrics/druid/config.yaml",
-      "vault://secrets/druid/runtime.properties"
-    );
+      "vault://secrets/druid/runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().startsWith("s3://"));
@@ -400,8 +396,7 @@ public class CommonTest {
       "config/jvm-server#1.conf",
       "log4j[production].xml",
       "metrics{datacenter:us-east}.yaml",
-      "runtime(optimized).properties"
-    );
+      "runtime(optimized).properties");
 
     assertNotNull(common);
     assertTrue(common.env().contains("@"));
@@ -418,24 +413,21 @@ public class CommonTest {
       "config/jvm/server.conf",
       "config/log4j2.xml",
       "config/metrics.yaml",
-      "config/runtime.properties"
-    );
+      "config/runtime.properties");
 
     var common2 = new Common(
       "production",
       "config/jvm/server.conf",
       "config/log4j2.xml",
       "config/metrics.yaml",
-      "config/runtime.properties"
-    );
+      "config/runtime.properties");
 
     var common3 = new Common(
       "staging",
       "config/jvm/server.conf",
       "config/log4j2.xml",
       "config/metrics.yaml",
-      "config/runtime.properties"
-    );
+      "config/runtime.properties");
 
     assertEquals(common1, common2);
     assertNotEquals(common1, common3);
@@ -450,8 +442,7 @@ public class CommonTest {
       "config/v3/jvm-tuned.conf",
       "config/v3/log4j2-async-v2.xml",
       "config/v3/metrics-prometheus-v1.5.yaml",
-      "config/v3/runtime-2024.01.properties"
-    );
+      "config/v3/runtime-2024.01.properties");
 
     assertNotNull(common);
     assertTrue(common.env().contains("v3.0.0"));
@@ -477,8 +468,7 @@ public class CommonTest {
         "jvm." + exts[0],
         "log4j." + exts[1],
         "metrics." + exts[2],
-        "runtime." + exts[3]
-      );
+        "runtime." + exts[3]);
       assertNotNull(common);
     }
   }
@@ -504,8 +494,7 @@ public class CommonTest {
         "jvm.conf?" + flags,
         "log4j2.xml",
         "metrics.yaml",
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.jvmConf().contains("jvm.conf"));
@@ -533,8 +522,7 @@ public class CommonTest {
         "jvm.conf",
         "config/" + appender,
         "metrics.yaml",
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.log4jConf().contains(appender));
@@ -561,8 +549,7 @@ public class CommonTest {
         "jvm.conf",
         "log4j2.xml",
         "config/metrics/" + exporter,
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.metricConf().contains(exporter));
@@ -581,8 +568,7 @@ public class CommonTest {
         "jvm-" + i + ".conf",
         "log4j2-" + i + ".xml",
         "metrics-" + i + ".yaml",
-        largePath
-      );
+        largePath);
 
       assertNotNull(common);
       assertTrue(common.runtimeProperties().length() > 100);
@@ -612,8 +598,7 @@ public class CommonTest {
         "jvm.conf",
         "log4j2.xml",
         "metrics.yaml",
-        precedenceOrder[i]
-      );
+        precedenceOrder[i]);
 
       assertNotNull(common);
       assertEquals(precedenceOrder[i], common.runtimeProperties());
@@ -627,8 +612,7 @@ public class CommonTest {
       "jvm.conf?override.heap.size=16g",
       "log4j2.xml?override.level=DEBUG",
       "metrics.yaml?override.interval=30s",
-      "runtime.properties?override.port=8888"
-    );
+      "runtime.properties?override.port=8888");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("override.heap.size=16g"));
@@ -644,8 +628,7 @@ public class CommonTest {
       "${CONFIG_PATH}/jvm.conf",
       "${CONFIG_PATH}/log4j2.xml",
       "${CONFIG_PATH}/metrics.yaml",
-      "${CONFIG_PATH}/runtime.properties"
-    );
+      "${CONFIG_PATH}/runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.env().contains("${DRUID_ENV}"));
@@ -671,8 +654,7 @@ public class CommonTest {
               "jvm-" + index + "-" + j + ".conf",
               "log4j2-" + index + "-" + j + ".xml",
               "metrics-" + index + "-" + j + ".yaml",
-              "runtime-" + index + "-" + j + ".properties"
-            );
+              "runtime-" + index + "-" + j + ".properties");
 
             String yaml = mapper.writeValueAsString(common);
             var loaded = mapper.readValue(yaml, Common.class);
@@ -701,8 +683,7 @@ public class CommonTest {
         "jvm-v" + version + ".conf",
         "log4j2-v" + version + ".xml",
         "metrics-v" + version + ".yaml",
-        "runtime-v" + version + ".properties"
-      );
+        "runtime-v" + version + ".properties");
 
       assertNotNull(common);
       assertTrue(common.jvmConf().contains("-v" + version));
@@ -730,8 +711,7 @@ public class CommonTest {
         scheme,
         "log4j2.xml",
         "metrics.yaml",
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.jvmConf().length() > 0);
@@ -756,8 +736,7 @@ public class CommonTest {
         "config/" + config,
         "log4j2.xml",
         "metrics.yaml",
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.jvmConf().contains(config));
@@ -769,12 +748,12 @@ public class CommonTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yamlWithAsyncConfig = """
-      env: production
-      jvmConf: config/jvm-async.conf
-      log4jConf: config/log4j2-async-console-file-kafka.xml
-      metricConf: config/metrics-async.yaml
-      runtimeProperties: config/runtime-async.properties
-    """;
+        env: production
+        jvmConf: config/jvm-async.conf
+        log4jConf: config/log4j2-async-console-file-kafka.xml
+        metricConf: config/metrics-async.yaml
+        runtimeProperties: config/runtime-async.properties
+      """;
 
     var common = mapper.readValue(yamlWithAsyncConfig, Common.class);
     assertNotNull(common);
@@ -787,12 +766,12 @@ public class CommonTest {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
 
     String yamlWithMultiExporters = """
-      env: production
-      jvmConf: config/jvm.conf
-      log4jConf: config/log4j2.xml
-      metricConf: config/metrics-prometheus-statsd-cloudwatch.yaml
-      runtimeProperties: config/runtime.properties
-    """;
+        env: production
+        jvmConf: config/jvm.conf
+        log4jConf: config/log4j2.xml
+        metricConf: config/metrics-prometheus-statsd-cloudwatch.yaml
+        runtimeProperties: config/runtime.properties
+      """;
 
     var common = mapper.readValue(yamlWithMultiExporters, Common.class);
     assertNotNull(common);
@@ -808,8 +787,7 @@ public class CommonTest {
       "s3://druid-config-bucket/prod/jvm.conf",
       "s3://druid-config-bucket/prod/log4j2.xml",
       "s3://druid-config-bucket/prod/metrics.yaml",
-      "s3://druid-config-bucket/prod/runtime.properties"
-    );
+      "s3://druid-config-bucket/prod/runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().startsWith("s3://"));
@@ -825,8 +803,7 @@ public class CommonTest {
       "consul://kv/druid/jvm-config",
       "consul://kv/druid/log4j-config",
       "consul://kv/druid/metrics-config",
-      "consul://kv/druid/runtime-config"
-    );
+      "consul://kv/druid/runtime-config");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().startsWith("consul://"));
@@ -852,8 +829,7 @@ public class CommonTest {
         "config/" + gcConfig,
         "log4j2.xml",
         "metrics.yaml",
-        "runtime.properties"
-      );
+        "runtime.properties");
 
       assertNotNull(common);
       assertTrue(common.jvmConf().contains("gc"));
@@ -873,8 +849,7 @@ public class CommonTest {
         "config/" + profile + "/jvm.conf",
         "config/" + profile + "/log4j2.xml",
         "config/" + profile + "/metrics.yaml",
-        "config/" + profile + "/runtime.properties"
-      );
+        "config/" + profile + "/runtime.properties");
 
       assertNotNull(common);
       assertEquals(profile, common.env());
@@ -889,8 +864,7 @@ public class CommonTest {
       "jvm.conf?heap.min=8g&heap.max=32g&cpu.cores=16",
       "log4j2.xml",
       "metrics.yaml?cpu.monitoring=true",
-      "runtime.properties?processing.threads=16"
-    );
+      "runtime.properties?processing.threads=16");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("heap.min=8g"));
@@ -911,8 +885,7 @@ public class CommonTest {
         "s3://config-bucket/jvm/node-" + i + ".conf",
         "s3://config-bucket/log4j2/node-" + i + ".xml",
         "consul://kv/metrics/node-" + i + ".yaml",
-        "vault://secret/runtime/node-" + i + ".properties"
-      );
+        "vault://secret/runtime/node-" + i + ".properties");
 
       String yaml = mapper.writeValueAsString(common);
       var deserialized = mapper.readValue(yaml, Common.class);
@@ -986,8 +959,7 @@ public class CommonTest {
       "jvm.conf?Xmn=4g&XX:MetaspaceSize=256m&XX:MaxMetaspaceSize=512m&XX:ReservedCodeCacheSize=240m",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("Xmn=4g"));
@@ -1001,8 +973,7 @@ public class CommonTest {
       "jvm.conf?Xss512k&XX:ParallelGCThreads=8&XX:ConcGCThreads=4",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("Xss512k"));
@@ -1171,8 +1142,7 @@ public class CommonTest {
         "jvm-" + i + ".conf",
         "log4j2-" + i + ".xml",
         "metrics-" + i + ".yaml",
-        "runtime-" + i + ".properties"
-      );
+        "runtime-" + i + ".properties");
 
       if (i % 10000 == 0) {
         String yaml = mapper.writeValueAsString(common);
@@ -1198,8 +1168,7 @@ public class CommonTest {
           "config/" + env + "/jvm.conf",
           "config/" + env + "/log4j2.xml",
           "config/" + env + "/metrics.yaml",
-          "config/" + env + "/runtime.properties"
-        );
+          "config/" + env + "/runtime.properties");
 
         assertNotNull(common);
         assertTrue(common.env().contains(env.split("-")[0]));
@@ -1217,8 +1186,7 @@ public class CommonTest {
         "jvm-v" + iteration + ".conf",
         "log4j2-v" + iteration + ".xml",
         "metrics-v" + iteration + ".yaml",
-        "runtime-v" + iteration + ".properties"
-      );
+        "runtime-v" + iteration + ".properties");
 
       String yaml = mapper.writeValueAsString(common);
       var reloaded = mapper.readValue(yaml, Common.class);
@@ -1264,8 +1232,7 @@ public class CommonTest {
       "jvm.conf?Djava.security.policy=/etc/druid/security.policy&Djava.security.manager",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("security"));
@@ -1278,8 +1245,7 @@ public class CommonTest {
       "jvm.conf?Djava.net.preferIPv4Stack=true&Djava.rmi.server.hostname=localhost",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("java.net"));
@@ -1326,8 +1292,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties?override.coordinator.period=PT30S&override.broker.cache.size=1GB"
-    );
+      "runtime.properties?override.coordinator.period=PT30S&override.broker.cache.size=1GB");
 
     assertNotNull(common);
     assertTrue(common.runtimeProperties().contains("override."));
@@ -1349,8 +1314,7 @@ public class CommonTest {
               "jvm-" + index + "-" + j + ".conf",
               "log4j2-" + index + "-" + j + ".xml",
               "metrics-" + index + "-" + j + ".yaml",
-              "runtime-" + index + "-" + j + ".properties"
-            );
+              "runtime-" + index + "-" + j + ".properties");
             String yaml = mapper.writeValueAsString(common);
             var loaded = mapper.readValue(yaml, Common.class);
             assertEquals(common, loaded);
@@ -1403,8 +1367,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2.xml?monitorInterval=30&shutdownHook=disable&shutdownTimeout=5000",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.log4jConf().contains("monitorInterval"));
@@ -1417,8 +1380,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2.xml",
       "metrics.yaml?dimensions=env:prod,cluster:main,region:us-east-1",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.metricConf().contains("dimensions="));
@@ -1431,8 +1393,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties?sys.druid.host=${HOSTNAME}&sys.druid.port=${PORT}"
-    );
+      "runtime.properties?sys.druid.host=${HOSTNAME}&sys.druid.port=${PORT}");
 
     assertNotNull(common);
     assertTrue(common.runtimeProperties().contains("${HOSTNAME}"));
@@ -1462,8 +1423,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2-routing.xml?route=${ctx:environment}",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.log4jConf().contains("routing"));
@@ -1508,8 +1468,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2-script.xml?scriptEngine=groovy",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.log4jConf().contains("script"));
@@ -1539,8 +1498,7 @@ public class CommonTest {
       "jvm.conf?XX:+PrintSafepointStatistics&XX:PrintSafepointStatisticsCount=1",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties"
-    );
+      "runtime.properties");
 
     assertNotNull(common);
     assertTrue(common.jvmConf().contains("Safepoint"));
@@ -1553,8 +1511,7 @@ public class CommonTest {
       "jvm.conf",
       "log4j2.xml",
       "metrics.yaml",
-      "runtime.properties?druid.processing.numThreads=16&druid.processing.buffer.sizeBytes=536870912"
-    );
+      "runtime.properties?druid.processing.numThreads=16&druid.processing.buffer.sizeBytes=536870912");
 
     assertNotNull(common);
     assertTrue(common.runtimeProperties().contains("druid.processing"));
@@ -1569,8 +1526,7 @@ public class CommonTest {
       "s3://config/prod/us-east-1/jvm-coordinator-tuned.conf?version=2.1.0",
       "s3://config/prod/us-east-1/log4j2-async-cloudwatch.xml?logGroup=/druid/coordinator",
       "consul://kv/metrics/prod/us-east-1/prometheus-detailed.yaml?interval=10s",
-      "vault://secret/druid/prod/us-east-1/runtime.properties?version=latest"
-    );
+      "vault://secret/druid/prod/us-east-1/runtime.properties?version=latest");
 
     assertNotNull(common);
     String yaml = mapper.writeValueAsString(common);

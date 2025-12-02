@@ -5,6 +5,7 @@ import static fasti.sh.execute.serialization.Format.id;
 
 import fasti.sh.eks.stack.nested.DruidNestedStack;
 import fasti.sh.execute.aws.eks.EksNestedStack;
+import fasti.sh.execute.aws.eks.ObservabilityNestedStack;
 import fasti.sh.execute.aws.vpc.NetworkNestedStack;
 import lombok.Getter;
 import software.amazon.awscdk.NestedStackProps;
@@ -17,6 +18,7 @@ public class DruidStack extends Stack {
   private final NetworkNestedStack network;
   private final EksNestedStack eks;
   private final DruidNestedStack druid;
+  private final ObservabilityNestedStack observability;
 
   public DruidStack(Construct scope, DruidReleaseConf conf, StackProps props) {
     super(scope, id("druid", conf.common().version()), props);
@@ -38,5 +40,14 @@ public class DruidStack extends Stack {
         .builder()
         .description(describe(conf.common(), "eks::druid"))
         .build());
+
+    this.observability = new ObservabilityNestedStack(this, conf.common(), conf.eks().observability(),
+        NestedStackProps
+            .builder()
+            .description(describe(conf.common(), "eks::observability"))
+            .build());
+
+    this.observability().addDependency(this.eks());
+    this.observability().addDependency(this.druid());
   }
 }

@@ -55,10 +55,14 @@ public class SecretsTest {
     // Verify that component types are correct
     var recordComponents = Secrets.class.getRecordComponents();
 
-    assertEquals(SecretCredentials.class, recordComponents[0].getType(),
-        "admin should be of type SecretCredentials");
-    assertEquals(SecretCredentials.class, recordComponents[1].getType(),
-        "system should be of type SecretCredentials");
+    assertEquals(
+      SecretCredentials.class,
+      recordComponents[0].getType(),
+      "admin should be of type SecretCredentials");
+    assertEquals(
+      SecretCredentials.class,
+      recordComponents[1].getType(),
+      "system should be of type SecretCredentials");
   }
 
   @Test
@@ -123,15 +127,16 @@ public class SecretsTest {
 
     // Test with invalid YAML where credentials are arrays instead of objects
     String invalidYaml = """
-      admin: [invalid, array, type]
-      system: [another, invalid, type]
-    """;
+        admin: [invalid, array, type]
+        system: [another, invalid, type]
+      """;
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(invalidYaml, Secrets.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(invalidYaml, Secrets.class);
+      });
   }
-
 
   @Test
   public void testComparisonBetweenDifferentSecretConfigurations() {
@@ -146,7 +151,6 @@ public class SecretsTest {
     assertEquals(secrets1.toString(), secrets2.toString());
   }
 
-
   @Test
   public void testMalformedYamlStructure() throws Exception {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
@@ -154,9 +158,11 @@ public class SecretsTest {
     // Test with completely malformed YAML
     String malformedYaml = "admin: {\nsystem: [invalid nested";
 
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(malformedYaml, Secrets.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(malformedYaml, Secrets.class);
+      });
   }
 
   // ==================== Additional Comprehensive Tests (10+) ====================
@@ -311,9 +317,11 @@ public class SecretsTest {
   public void testSecretsDeserializationWithExtraFieldsFailsAsExpected() throws Exception {
     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
     String yaml = "admin: null\nsystem: null\nextraField: should-cause-error\n";
-    assertThrows(Exception.class, () -> {
-      mapper.readValue(yaml, Secrets.class);
-    });
+    assertThrows(
+      Exception.class,
+      () -> {
+        mapper.readValue(yaml, Secrets.class);
+      });
   }
 
   @Test
