@@ -41,7 +41,7 @@ public class Launch {
             conf.platform(),
             String
               .format(
-                "%s %s release",
+                "Druid cluster release [%s/%s] - Apache Druid on EKS",
                 conf.release().common().name(),
                 conf.release().common().alias())))
         .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
