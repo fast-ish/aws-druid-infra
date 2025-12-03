@@ -7,7 +7,9 @@ serviceAccount:
       "{{deployment:domain}}/category": compute.storage
       "{{deployment:domain}}/type": analytics
       "{{deployment:domain}}/component": druid-access
-      "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+      "{{deployment:domain}}/organization": "{{deployment:organization}}"
+      "{{deployment:domain}}/name": "{{deployment:team:name}}"
+      "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
     annotations: { }
   role:
     name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
@@ -54,4 +56,6 @@ serviceAccount:
       "{{deployment:domain}}:category": compute.storage
       "{{deployment:domain}}:type": analytics
       "{{deployment:domain}}:component": {{deployment:id}}-druid-access
-      "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+      "{{deployment:domain}}:organization": "{{deployment:organization}}"
+      "{{deployment:domain}}:name": "{{deployment:team:name}}"
+      "{{deployment:domain}}:alias": "{{deployment:team:alias}}"

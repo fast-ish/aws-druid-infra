@@ -15,16 +15,15 @@ image:
   pullPolicy: Always
 
 labels:
-  "{{deployment:domain}}/account": "{{deployment:account}}"
-  "{{deployment:domain}}/region": "{{deployment:region}}"
-  "{{deployment:domain}}/billing": "{{deployment:organization}}"
-  "{{deployment:domain}}/version": "{{deployment:version}}"
   "{{deployment:domain}}/resource-type": druid-helm-chart
   "{{deployment:domain}}/category": compute.storage
   "{{deployment:domain}}/type": analytics
-  "{{deployment:domain}}/id": "{{deployment:id}}"
+  "{{deployment:domain}}/billing": "{{deployment:organization}}"
+  "{{deployment:domain}}/account": "{{deployment:account}}"
+  "{{deployment:domain}}/region": "{{deployment:region}}"
+  "{{deployment:domain}}/version": "{{deployment:version}}"
   "{{deployment:domain}}/name": "{{deployment:team:name}}"
-  "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+  "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
 
 annotations:
   "k8s.grafana.com/scrape": "true"
