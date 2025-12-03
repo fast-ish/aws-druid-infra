@@ -11,7 +11,9 @@ kafka:
             "{{deployment:domain}}/category": druid
             "{{deployment:domain}}/type": ingestion
             "{{deployment:domain}}/component": api
-            "{{deployment:domain}}/part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+            "{{deployment:domain}}/organization": "{{deployment:organization}}"
+            "{{deployment:domain}}/name": "{{deployment:team:name}}"
+            "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
           annotations: { }
         role:
           name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-sa
@@ -31,10 +33,14 @@ kafka:
             "{{deployment:domain}}:category": api
             "{{deployment:domain}}:type": ingest
             "{{deployment:domain}}:component": {{deployment:id}}-api
-            "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+            "{{deployment:domain}}:organization": "{{deployment:organization}}"
+            "{{deployment:domain}}:name": "{{deployment:team:name}}"
+            "{{deployment:domain}}:alias": "{{deployment:team:alias}}"
   tags:
     "{{deployment:domain}}:resource-type": msk
     "{{deployment:domain}}:category": compute
     "{{deployment:domain}}:type": streaming
     "{{deployment:domain}}:component": {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk
-    "{{deployment:domain}}:part-of": "{{deployment:organization}}.{{deployment:team:name}}.{{deployment:team:alias}}"
+    "{{deployment:domain}}:organization": "{{deployment:organization}}"
+    "{{deployment:domain}}:name": "{{deployment:team:name}}"
+    "{{deployment:domain}}:alias": "{{deployment:team:alias}}"
