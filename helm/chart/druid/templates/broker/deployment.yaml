@@ -1,73 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "druid.name" . }}-druid-broker
+  name: {{ include "druid.component.name" (list "broker" .) }}
   labels:
-    {{- include "broker.labels" . | indent 4 }}
+    {{- include "druid.component.labels" (list "broker" .) | indent 4 }}
   annotations:
-    {{- include "broker.annotations" . | indent 4 }}
+    {{- include "druid.component.annotations" (list "broker" .) | indent 4 }}
 spec:
   replicas: {{ .Values.broker.replicas }}
   selector:
     matchLabels:
-      {{- include "broker.match.labels" . | nindent 6 }}
+      {{- include "druid.component.match.labels" (list "broker" .) | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "broker.labels" . | indent 8 }}
-        {{- include "broker.match.labels" . | nindent 8 }}
+        {{- include "druid.component.labels" (list "broker" .) | indent 8 }}
+        {{- include "druid.component.match.labels" (list "broker" .) | nindent 8 }}
       annotations:
-        {{- include "broker.annotations" . | indent 8 }}
+        {{- include "druid.component.annotations" (list "broker" .) | indent 8 }}
     spec:
       {{- include "common.security" . | nindent 6 }}
       nodeSelector:
-        {{- include "broker.node.selector" . | nindent 8 }}
+        {{- include "druid.component.node.selector" (list "broker" .) | nindent 8 }}
       volumes:
-        {{- include "broker.volumes" . | nindent 8 }}
+        {{- include "druid.component.volumes" (list "broker" .) | nindent 8 }}
       containers:
-        - name: {{ include "druid.name" . }}-druid-broker
+        - name: {{ include "druid.component.name" (list "broker" .) }}
           {{- include "druid.image" . | nindent 10 }}
-          args: [ "broker" ]
-          ports:
-            - name: broker
-              containerPort: 8282
-              protocol: TCP
-            - name: prometheus
-              containerPort: 9000
-              protocol: TCP
+          args: ["broker"]
+          {{- include "druid.ports" (list "broker" 8282) | nindent 10 }}
           env:
             {{- include "common.env" . | nindent 12 }}
           resources:
             {{- toYaml .Values.broker.resources | nindent 12 }}
           volumeMounts:
-            {{- include "broker.volume.mounts" . | nindent 12 }}
-          livenessProbe:
-            failureThreshold: 3
-            httpGet:
-              path: /status/health
-              port: 8282
-              scheme: HTTPS
-            initialDelaySeconds: 180
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 5
-          readinessProbe:
-            failureThreshold: 10
-            httpGet:
-              path: /druid/broker/v1/readiness
-              port: 8282
-              scheme: HTTPS
-            initialDelaySeconds: 180
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 5
-          startupProbe:
-            failureThreshold: 10
-            httpGet:
-              path: /druid/broker/v1/readiness
-              port: 8282
-              scheme: HTTPS
-            initialDelaySeconds: 180
-            periodSeconds: 10
-            successThreshold: 1
-            timeoutSeconds: 5
+            {{- include "druid.component.volumeMounts" (list "broker" .) | nindent 12 }}
+          {{- include "druid.probes" (list 8282 "/status/health" "/druid/broker/v1/readiness") | nindent 10 }}

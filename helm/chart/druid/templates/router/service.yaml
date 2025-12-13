@@ -1,19 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "druid.name" . }}-druid-router
+  name: {{ include "druid.component.name" (list "router" .) }}
   labels:
-    {{- include "router.labels" . | indent 4 }}
+    {{- include "druid.component.labels" (list "router" .) | indent 4 }}
   annotations:
-    {{- include "router.annotations" . | indent 4 }}
+    {{- include "druid.component.annotations" (list "router" .) | indent 4 }}
 spec:
   type: ClusterIP
   clusterIP: None
-  ports:
-    - name: router
-      port: 9088
-    - name: prometheus
-      port: 9000
+  {{- include "druid.service.ports" (list "router" 9088) | nindent 2 }}
   selector:
-    {{- include "router.labels" . | indent 4 }}
-    {{- include "router.match.labels" . | nindent 4 }}
+    {{- include "druid.component.labels" (list "router" .) | indent 4 }}
+    {{- include "druid.component.match.labels" (list "router" .) | nindent 4 }}

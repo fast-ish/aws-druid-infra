@@ -13,12 +13,7 @@ spec:
     - alias: bottlerocket@latest
   subnetSelectorTerms:
     - tags:
-        "{{ .Values.domain }}:resource-type": subnet
-        "{{ .Values.domain }}:category": network
         "{{ .Values.domain }}:type": private_with_egress
-        "{{ .Values.domain }}:cidrMask": "24"
-        "{{ .Values.domain }}:component": "{{ .Values.hostedId }}-vpc"
-        "{{ .Values.domain }}:part-of": "{{ .Values.organization }}.{{ .Values.name }}.{{ .Values.alias }}"
         karpenter.sh/discovery: "{{ .Values.hostedId }}-vpc"
   securityGroupSelectorTerms:
     - tags:
