@@ -129,10 +129,15 @@ release:
     secrets: druid/setup/secrets.mustache
     storage: druid/setup/storage.mustache
     ingestion: druid/setup/ingestion.mustache
+    asset: helm/chart/druid
+    dockerImage:
+      name: {{deployment:id}}-druid
+      directory: helm/image/druid
+      dockerfile: Dockerfile
+      platform: linux/amd64
+      buildArgs: {}
     chart:
       name: druid
       namespace: druid
       release: {{deployment:eks:druid:release}}
-      repository: oci://public.ecr.aws/q9l5h9b2/fasti.sh/v1/helm/druid
       values: druid/values.mustache
-      version: 34.0.0
