@@ -12,3 +12,5 @@ cdk.out
 
 cdk.context.json
 .ok.prep
+scripts/smoke-test/druid-smoke-test
+scripts/smoke-test/webapp-smoke-test

@@ -66,29 +66,29 @@ runtime: |-
   # https://druid.apache.org/docs/latest/operations/tls-support/
   druid.enableTlsPort=true
   druid.enablePlaintextPort=false
-  druid.server.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/server-keystore.p12
+  druid.server.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/keystore.p12
   druid.server.https.keyStoreType=pkcs12
-  druid.server.https.certAlias=druid-server
+  druid.server.https.certAlias=1
   druid.server.https.keyManagerPassword=changeit
   druid.server.https.keyStorePassword=changeit
   druid.server.https.reloadSslContext=true
   druid.server.https.reloadSslContextSeconds=180
   druid.server.https.requestClientCertificate=true
   druid.server.https.trustStoreType=pkcs12
-  druid.server.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/server-truststore.p12
+  druid.server.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/truststore.p12
   druid.server.https.trustStorePassword=changeit
   druid.server.https.validateHostnames=false
   druid.server.https.sniHostCheck=false
   druid.server.http.enforceStrictSNIHostChecking=false
-  druid.client.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/client-keystore.p12
+  druid.client.https.keyStorePath=/opt/druid/conf/druid/cluster/tls/keystore.p12
   druid.client.https.keyStoreType=pkcs12
-  druid.client.https.certAlias=druid-client
+  druid.client.https.certAlias=1
   druid.client.https.keyStorePassword=changeit
   druid.client.https.keyManagerPassword=changeit
   druid.client.https.validateHostnames=false
   druid.client.https.protocol=TLSv1.2
   druid.client.https.trustStoreType=pkcs12
-  druid.client.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/client-truststore.p12
+  druid.client.https.trustStorePath=/opt/druid/conf/druid/cluster/tls/truststore.p12
   druid.client.https.trustStorePassword=changeit
 
   # druid kubernetes extensions [zookeeper-less]
@@ -222,18 +222,16 @@ volumes:
     secret:
       secretName: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-tls
       items:
-        - key: client-keystore.p12
-          path: client-keystore.p12
-        - key: client-truststore.p12
-          path: client-truststore.p12
-        - key: client.crt
-          path: client.crt
-        - key: server-keystore.p12
-          path: server-keystore.p12
-        - key: server-truststore.p12
-          path: server-truststore.p12
-        - key: server.crt
-          path: server.crt
+        - key: keystore.p12
+          path: keystore.p12
+        - key: truststore.p12
+          path: truststore.p12
+        - key: tls.crt
+          path: tls.crt
+        - key: tls.key
+          path: tls.key
+        - key: ca.crt
+          path: ca.crt
 volumeMounts:
   - mountPath: /opt/druid/conf/druid/cluster/_common
     name: druid-common-conf

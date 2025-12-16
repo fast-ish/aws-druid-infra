@@ -98,6 +98,7 @@ func (s *TestSuite) RunAll() {
 	s.testSecurity()
 	s.testNetworking()
 	s.testDruid()
+	s.testDruidInfrastructure()
 	s.testObservability()
 }
 
@@ -247,8 +248,8 @@ func (s *TestSuite) testSecurity() {
 		s.pass("ClusterSecretStore 'aws-secrets-manager'")
 	}
 
-	// Check ExternalSecrets sync status
-	esGVR := schema.GroupVersionResource{Group: "external-secrets.io", Version: "v1beta1", Resource: "externalsecrets"}
+	// Check ExternalSecrets sync status (v1 API)
+	esGVR := schema.GroupVersionResource{Group: "external-secrets.io", Version: "v1", Resource: "externalsecrets"}
 	esList, err := s.dynamicClient.Resource(esGVR).Namespace("").List(ctx, metav1.ListOptions{})
 	if err == nil {
 		synced := 0
@@ -310,14 +311,14 @@ func (s *TestSuite) testNetworking() {
 }
 
 // -----------------------------------------------------------------------------
-// Druid Tests
+// Druid Cluster Tests
 // -----------------------------------------------------------------------------
 
 func (s *TestSuite) testDruid() {
-	s.printHeader("APACHE DRUID")
+	s.printHeader("APACHE DRUID CLUSTER")
 	ctx := context.Background()
 
-	// Find Druid namespace (may vary by deployment)
+	// Find Druid namespace
 	druidNamespace := s.findDruidNamespace(ctx)
 	if druidNamespace == "" {
 		s.fail("Druid namespace not found")
@@ -325,24 +326,23 @@ func (s *TestSuite) testDruid() {
 	}
 	s.pass(fmt.Sprintf("Druid namespace: %s", druidNamespace))
 
-	s.printSection("Druid Components")
+	s.printSection("Druid Core Components")
 
-	// Coordinator (StatefulSet)
+	// Coordinator (manages data availability and segment distribution)
 	s.checkStatefulSetReady(ctx, druidNamespace, "coordinator", "Druid Coordinator")
 
-	// Overlord (StatefulSet)
+	// Overlord (manages task assignment and lifecycle)
 	s.checkStatefulSetReady(ctx, druidNamespace, "overlord", "Druid Overlord")
 
-	// Historical (StatefulSet)
+	// Historical (serves queries from deep storage)
 	s.checkStatefulSetReady(ctx, druidNamespace, "historical", "Druid Historical")
 
-	// Broker (Deployment)
+	// Broker (receives queries and routes to appropriate nodes)
 	s.checkDeploymentReadyByPrefix(ctx, druidNamespace, "broker", "Druid Broker")
 
-	// Router (Deployment)
+	// Router (optional: provides unified API gateway)
 	s.checkDeploymentReadyByPrefix(ctx, druidNamespace, "router", "Druid Router")
 
-	// MiddleManager / Indexer (may be dynamic via Karpenter)
 	s.printSection("Druid Data Ingestion")
 	pods, err := s.clientset.CoreV1().Pods(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
@@ -374,19 +374,167 @@ func (s *TestSuite) testDruid() {
 	s.printSection("Druid Services")
 	services, err := s.clientset.CoreV1().Services(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
-		druidServices := 0
+		componentServices := map[string]bool{}
 		for _, svc := range services.Items {
-			if strings.Contains(svc.Name, "druid") || strings.Contains(svc.Name, "broker") ||
-				strings.Contains(svc.Name, "coordinator") || strings.Contains(svc.Name, "router") ||
-				strings.Contains(svc.Name, "overlord") || strings.Contains(svc.Name, "historical") {
-				druidServices++
+			name := strings.ToLower(svc.Name)
+			if strings.Contains(name, "broker") {
+				componentServices["broker"] = true
+			}
+			if strings.Contains(name, "coordinator") {
+				componentServices["coordinator"] = true
+			}
+			if strings.Contains(name, "router") {
+				componentServices["router"] = true
+			}
+			if strings.Contains(name, "overlord") {
+				componentServices["overlord"] = true
+			}
+			if strings.Contains(name, "historical") {
+				componentServices["historical"] = true
 			}
 		}
-		s.pass(fmt.Sprintf("Druid services: %d", druidServices))
+		for component, exists := range componentServices {
+			if exists {
+				s.pass(fmt.Sprintf("Service: %s", component))
+			}
+		}
 	}
 
-	s.printSection("Druid Configuration")
-	// Check ConfigMaps
+	s.printSection("Druid Health Endpoints")
+	// Check Router health if accessible
+	routerHost := s.getDruidIngressHost(ctx, druidNamespace)
+	if routerHost != "" {
+		s.pass(fmt.Sprintf("Druid ingress: %s", routerHost))
+
+		// Try health check
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Get(fmt.Sprintf("https://%s/status/health", routerHost))
+		if err == nil {
+			resp.Body.Close()
+			if resp.StatusCode == 200 {
+				s.pass("Druid Router health: OK")
+			} else {
+				s.warn(fmt.Sprintf("Druid Router health: HTTP %d", resp.StatusCode))
+			}
+		} else {
+			s.warn("Druid Router not reachable externally (may require VPN)")
+		}
+	}
+
+	s.printSection("Druid Karpenter NodePools")
+	nodePoolGVR := schema.GroupVersionResource{Group: "karpenter.sh", Version: "v1", Resource: "nodepools"}
+	nodePools, err := s.dynamicClient.Resource(nodePoolGVR).List(ctx, metav1.ListOptions{})
+	if err == nil {
+		druidPools := []string{}
+		for _, np := range nodePools.Items {
+			name := np.GetName()
+			if strings.Contains(name, "druid") || strings.Contains(name, "broker") ||
+				strings.Contains(name, "historical") || strings.Contains(name, "coordinator") ||
+				strings.Contains(name, "overlord") || strings.Contains(name, "router") ||
+				strings.Contains(name, "middlemanager") {
+				druidPools = append(druidPools, name)
+			}
+		}
+		if len(druidPools) > 0 {
+			s.pass(fmt.Sprintf("Druid NodePools: %d (%s)", len(druidPools), strings.Join(druidPools, ", ")))
+		} else {
+			s.warn("No Druid-specific NodePools found")
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Druid Infrastructure Tests (AWS Resources)
+// -----------------------------------------------------------------------------
+
+func (s *TestSuite) testDruidInfrastructure() {
+	s.printHeader("DRUID INFRASTRUCTURE (AWS)")
+	ctx := context.Background()
+
+	druidNamespace := s.findDruidNamespace(ctx)
+	if druidNamespace == "" {
+		s.warn("Skipping infrastructure tests - Druid namespace not found")
+		return
+	}
+
+	s.printSection("Druid Service Accounts (IRSA)")
+	// Check for Druid service accounts with IRSA
+	serviceAccounts, err := s.clientset.CoreV1().ServiceAccounts(druidNamespace).List(ctx, metav1.ListOptions{})
+	if err == nil {
+		irsaConfigured := 0
+		for _, sa := range serviceAccounts.Items {
+			if sa.Annotations != nil {
+				if roleArn, ok := sa.Annotations["eks.amazonaws.com/role-arn"]; ok && roleArn != "" {
+					irsaConfigured++
+					s.pass(fmt.Sprintf("ServiceAccount '%s' has IRSA", sa.Name))
+				}
+			}
+		}
+		if irsaConfigured == 0 {
+			s.warn("No Druid service accounts with IRSA found")
+		}
+	}
+
+	s.printSection("Druid Secrets (AWS Secrets Manager)")
+	// Check for ExternalSecrets in Druid namespace (try v1 first, fallback to v1beta1)
+	esGVR := schema.GroupVersionResource{Group: "external-secrets.io", Version: "v1", Resource: "externalsecrets"}
+	externalSecrets, err := s.dynamicClient.Resource(esGVR).Namespace(druidNamespace).List(ctx, metav1.ListOptions{})
+	if err == nil && len(externalSecrets.Items) > 0 {
+		synced := 0
+		secretNames := []string{}
+		for _, es := range externalSecrets.Items {
+			secretNames = append(secretNames, es.GetName())
+			conditions, found, _ := unstructured.NestedSlice(es.Object, "status", "conditions")
+			if found {
+				for _, c := range conditions {
+					cond := c.(map[string]interface{})
+					if cond["type"] == "Ready" && cond["status"] == "True" {
+						synced++
+						break
+					}
+				}
+			}
+		}
+		s.pass(fmt.Sprintf("Druid ExternalSecrets: %d total, %d synced", len(externalSecrets.Items), synced))
+
+		// Check for specific secrets
+		for _, name := range secretNames {
+			if strings.Contains(name, "admin") {
+				s.pass("Admin credentials ExternalSecret exists")
+			}
+			if strings.Contains(name, "metadata") || strings.Contains(name, "rds") || strings.Contains(name, "postgres") {
+				s.pass("Metadata store credentials ExternalSecret exists")
+			}
+		}
+	} else {
+		s.warn("No ExternalSecrets found in Druid namespace")
+	}
+
+	// Check actual secrets exist
+	secrets, err := s.clientset.CoreV1().Secrets(druidNamespace).List(ctx, metav1.ListOptions{})
+	if err == nil {
+		metadataSecret := false
+		adminSecret := false
+		for _, secret := range secrets.Items {
+			name := strings.ToLower(secret.Name)
+			if strings.Contains(name, "metadata") || strings.Contains(name, "rds") || strings.Contains(name, "postgres") {
+				metadataSecret = true
+			}
+			if strings.Contains(name, "admin") {
+				adminSecret = true
+			}
+		}
+		if metadataSecret {
+			s.pass("Metadata store credentials secret exists")
+		} else {
+			s.warn("Metadata store credentials secret not found")
+		}
+		if adminSecret {
+			s.pass("Admin credentials secret exists")
+		}
+	}
+
+	s.printSection("Druid ConfigMaps")
 	cms, err := s.clientset.CoreV1().ConfigMaps(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
 		druidCMs := 0
@@ -395,154 +543,110 @@ func (s *TestSuite) testDruid() {
 				druidCMs++
 			}
 		}
-		s.pass(fmt.Sprintf("Druid ConfigMaps: %d", druidCMs))
-	}
-
-	s.printSection("Druid Secrets")
-	// Check for metadata store credentials
-	secrets, err := s.clientset.CoreV1().Secrets(druidNamespace).List(ctx, metav1.ListOptions{})
-	if err == nil {
-		metadataSecret := false
-		adminSecret := false
-		for _, secret := range secrets.Items {
-			if strings.Contains(secret.Name, "metadata") {
-				metadataSecret = true
-			}
-			if strings.Contains(secret.Name, "admin") {
-				adminSecret = true
-			}
-		}
-		if metadataSecret {
-			s.pass("Metadata store credentials exist")
+		if druidCMs > 0 {
+			s.pass(fmt.Sprintf("Druid ConfigMaps: %d", druidCMs))
 		} else {
-			s.warn("Metadata store credentials not found")
-		}
-		if adminSecret {
-			s.pass("Admin credentials exist")
+			s.warn("No Druid ConfigMaps found")
 		}
 	}
 
-	s.printSection("Druid Health")
-	// Try to reach router health endpoint
-	routerSvc, err := s.clientset.CoreV1().Services(druidNamespace).Get(ctx, "router", metav1.GetOptions{})
+	s.printSection("Druid PersistentVolumeClaims")
+	pvcs, err := s.clientset.CoreV1().PersistentVolumeClaims(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
-		// Check if there's an ingress
-		ingresses, _ := s.clientset.NetworkingV1().Ingresses(druidNamespace).List(ctx, metav1.ListOptions{})
-		for _, ing := range ingresses.Items {
-			if len(ing.Spec.Rules) > 0 {
-				host := ing.Spec.Rules[0].Host
-				if host != "" && strings.Contains(host, "druid") {
-					s.pass(fmt.Sprintf("Druid ingress: %s", host))
+		bound := 0
+		for _, pvc := range pvcs.Items {
+			if pvc.Status.Phase == "Bound" {
+				bound++
+			}
+		}
+		if len(pvcs.Items) > 0 {
+			s.pass(fmt.Sprintf("PVCs: %d total, %d bound", len(pvcs.Items), bound))
+		}
+	}
 
-					// Try health check
-					client := &http.Client{Timeout: 5 * time.Second}
-					resp, err := client.Get(fmt.Sprintf("https://%s/status/health", host))
-					if err == nil {
-						resp.Body.Close()
-						if resp.StatusCode == 200 {
-							s.pass("Druid Router health: OK")
-						} else {
-							s.warn(fmt.Sprintf("Druid Router health: HTTP %d", resp.StatusCode))
-						}
+	s.printSection("Kubernetes Discovery (ZooKeeper-less)")
+	// Druid uses Kubernetes extension for discovery instead of ZooKeeper
+	// https://druid.apache.org/docs/latest/development/extensions-core/kubernetes/
+
+	// Check ConfigMap for k8s discovery settings
+	configMaps, err := s.clientset.CoreV1().ConfigMaps(druidNamespace).List(ctx, metav1.ListOptions{})
+	if err == nil {
+		for _, cm := range configMaps.Items {
+			if strings.Contains(cm.Name, "common-conf") {
+				if props, ok := cm.Data["common.runtime.properties"]; ok {
+					if strings.Contains(props, "druid.discovery.type=k8s") {
+						s.pass("ConfigMap: druid.discovery.type=k8s")
 					} else {
-						s.warn("Druid Router not reachable externally")
+						s.fail("ConfigMap: druid.discovery.type not set to k8s")
 					}
-					break
+					if strings.Contains(props, "druid.zk.service.enabled=false") {
+						s.pass("ConfigMap: ZooKeeper disabled (druid.zk.service.enabled=false)")
+					}
+					if strings.Contains(props, "druid.discovery.k8s.clusterIdentifier") {
+						s.pass("ConfigMap: k8s cluster identifier configured")
+					}
 				}
-			}
-		}
-	} else {
-		_ = routerSvc // Unused but checked
-		s.warn("Router service not found")
-	}
-
-	s.printSection("ZooKeeper")
-	// Check for ZooKeeper (may be in same namespace or separate)
-	zkNamespaces := []string{druidNamespace, "zookeeper", "kafka"}
-	zkFound := false
-	for _, ns := range zkNamespaces {
-		pods, err := s.clientset.CoreV1().Pods(ns).List(ctx, metav1.ListOptions{
-			LabelSelector: "app=zookeeper",
-		})
-		if err == nil && len(pods.Items) > 0 {
-			running := 0
-			for _, pod := range pods.Items {
-				if pod.Status.Phase == "Running" {
-					running++
-				}
-			}
-			if running > 0 {
-				s.pass(fmt.Sprintf("ZooKeeper pods running: %d (namespace: %s)", running, ns))
-				zkFound = true
-				break
-			}
-		}
-		// Try alternative label
-		pods, err = s.clientset.CoreV1().Pods(ns).List(ctx, metav1.ListOptions{
-			LabelSelector: "app.kubernetes.io/name=zookeeper",
-		})
-		if err == nil && len(pods.Items) > 0 {
-			running := 0
-			for _, pod := range pods.Items {
-				if pod.Status.Phase == "Running" {
-					running++
-				}
-			}
-			if running > 0 {
-				s.pass(fmt.Sprintf("ZooKeeper pods running: %d (namespace: %s)", running, ns))
-				zkFound = true
 				break
 			}
 		}
 	}
-	if !zkFound {
-		s.warn("ZooKeeper pods not found (may be external)")
-	}
 
-	s.printSection("Druid Karpenter NodePools")
-	nodePoolGVR := schema.GroupVersionResource{Group: "karpenter.sh", Version: "v1", Resource: "nodepools"}
-	nodePools, err := s.dynamicClient.Resource(nodePoolGVR).List(ctx, metav1.ListOptions{})
+	// Check for headless services (required for k8s discovery)
+	services, err := s.clientset.CoreV1().Services(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
-		druidPools := 0
-		for _, np := range nodePools.Items {
-			name := np.GetName()
-			if strings.Contains(name, "druid") || strings.Contains(name, "broker") ||
-				strings.Contains(name, "historical") || strings.Contains(name, "coordinator") ||
-				strings.Contains(name, "overlord") || strings.Contains(name, "router") {
-				druidPools++
+		headlessCount := 0
+		for _, svc := range services.Items {
+			if svc.Spec.ClusterIP == "None" {
+				headlessCount++
+				s.pass(fmt.Sprintf("Headless service: %s", svc.Name))
 			}
 		}
-		if druidPools > 0 {
-			s.pass(fmt.Sprintf("Druid NodePools: %d", druidPools))
-		} else {
-			s.warn("No Druid-specific NodePools found")
-		}
-	}
-}
-
-func (s *TestSuite) findDruidNamespace(ctx context.Context) string {
-	// Common Druid namespace patterns
-	candidates := []string{"druid", "apache-druid"}
-
-	// First check exact matches
-	for _, ns := range candidates {
-		_, err := s.clientset.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{})
-		if err == nil {
-			return ns
+		if headlessCount == 0 {
+			s.warn("No headless services found (needed for k8s pod discovery)")
 		}
 	}
 
-	// Then search for namespaces containing "druid"
-	namespaces, err := s.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	// Check for leader election ConfigMaps (used by k8s discovery)
+	leaderElectionCMs := 0
+	for _, cm := range configMaps.Items {
+		if strings.Contains(cm.Name, "leaderelection") {
+			leaderElectionCMs++
+			s.pass(fmt.Sprintf("Leader election ConfigMap: %s", cm.Name))
+		}
+	}
+	if leaderElectionCMs == 0 {
+		s.warn("No leader election ConfigMaps found")
+	}
+
+	// Check RBAC for k8s discovery (ServiceAccount needs pod list/watch permissions)
+	druidSA, err := s.clientset.CoreV1().ServiceAccounts(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
-		for _, ns := range namespaces.Items {
-			if strings.Contains(strings.ToLower(ns.Name), "druid") {
-				return ns.Name
+		for _, sa := range druidSA.Items {
+			if strings.Contains(sa.Name, "druid") {
+				s.pass(fmt.Sprintf("Druid ServiceAccount: %s", sa.Name))
+				break
 			}
 		}
 	}
 
-	return ""
+	s.printSection("MSK/Kafka Connectivity")
+	// Check for MSK service accounts (for Kafka ingestion)
+	mskServiceAccounts := 0
+	if serviceAccounts, err := s.clientset.CoreV1().ServiceAccounts("").List(ctx, metav1.ListOptions{}); err == nil {
+		for _, sa := range serviceAccounts.Items {
+			if strings.Contains(strings.ToLower(sa.Name), "msk") || strings.Contains(strings.ToLower(sa.Name), "kafka") {
+				if sa.Annotations != nil {
+					if roleArn, ok := sa.Annotations["eks.amazonaws.com/role-arn"]; ok && roleArn != "" {
+						mskServiceAccounts++
+						s.pass(fmt.Sprintf("MSK/Kafka ServiceAccount '%s/%s' has IRSA", sa.Namespace, sa.Name))
+					}
+				}
+			}
+		}
+	}
+	if mskServiceAccounts == 0 {
+		s.warn("No MSK/Kafka service accounts with IRSA found (may not use Kafka ingestion)")
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -566,7 +670,13 @@ func (s *TestSuite) testObservability() {
 	s.printSection("Container Insights")
 	s.checkPodsRunning(ctx, "amazon-cloudwatch", "app.kubernetes.io/name=cloudwatch-agent", "CloudWatch Agent")
 
-	s.printSection("Grafana Monitoring")
+	s.printSection("Grafana Cloud Monitoring (k8s-monitoring)")
+	s.checkPodsRunning(ctx, "monitoring", "app.kubernetes.io/name=alloy-logs", "Alloy Logs")
+	s.checkPodsRunning(ctx, "monitoring", "app.kubernetes.io/name=alloy-metrics", "Alloy Metrics")
+	s.checkPodsRunning(ctx, "monitoring", "app.kubernetes.io/name=alloy-singleton", "Alloy Singleton")
+	s.checkPodsRunning(ctx, "monitoring", "app.kubernetes.io/name=kube-state-metrics", "Kube State Metrics")
+	s.checkPodsRunning(ctx, "monitoring", "app.kubernetes.io/name=node-exporter", "Node Exporter")
+
 	pods, err := s.clientset.CoreV1().Pods("monitoring").List(ctx, metav1.ListOptions{})
 	if err == nil && len(pods.Items) > 0 {
 		running := 0
@@ -583,11 +693,83 @@ func (s *TestSuite) testObservability() {
 	} else {
 		s.warn("Monitoring namespace/pods not found")
 	}
+
+	// Check for Druid-specific dashboards in Grafana
+	s.printSection("Druid Monitoring")
+	druidNamespace := s.findDruidNamespace(ctx)
+	if druidNamespace != "" {
+		// Check if Druid metrics are being scraped
+		// Look for ServiceMonitor or PodMonitor CRDs targeting Druid
+		smGVR := schema.GroupVersionResource{Group: "monitoring.coreos.com", Version: "v1", Resource: "servicemonitors"}
+		serviceMonitors, err := s.dynamicClient.Resource(smGVR).Namespace(druidNamespace).List(ctx, metav1.ListOptions{})
+		if err == nil && len(serviceMonitors.Items) > 0 {
+			s.pass(fmt.Sprintf("Druid ServiceMonitors: %d", len(serviceMonitors.Items)))
+		}
+
+		// Check for Druid metrics endpoint
+		pods, err := s.clientset.CoreV1().Pods(druidNamespace).List(ctx, metav1.ListOptions{})
+		if err == nil {
+			metricsPortFound := false
+			for _, pod := range pods.Items {
+				for _, container := range pod.Spec.Containers {
+					for _, port := range container.Ports {
+						if port.Name == "metrics" || port.ContainerPort == 8000 || port.ContainerPort == 9090 {
+							metricsPortFound = true
+							break
+						}
+					}
+				}
+			}
+			if metricsPortFound {
+				s.pass("Druid metrics ports exposed")
+			}
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Helper Functions
 // -----------------------------------------------------------------------------
+
+func (s *TestSuite) findDruidNamespace(ctx context.Context) string {
+	// Common Druid namespace patterns
+	candidates := []string{"druid", "apache-druid"}
+
+	for _, ns := range candidates {
+		_, err := s.clientset.CoreV1().Namespaces().Get(ctx, ns, metav1.GetOptions{})
+		if err == nil {
+			return ns
+		}
+	}
+
+	// Search for namespaces containing "druid"
+	namespaces, err := s.clientset.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
+	if err == nil {
+		for _, ns := range namespaces.Items {
+			if strings.Contains(strings.ToLower(ns.Name), "druid") {
+				return ns.Name
+			}
+		}
+	}
+
+	return ""
+}
+
+func (s *TestSuite) getDruidIngressHost(ctx context.Context, namespace string) string {
+	ingresses, err := s.clientset.NetworkingV1().Ingresses(namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return ""
+	}
+	for _, ing := range ingresses.Items {
+		if len(ing.Spec.Rules) > 0 {
+			host := ing.Spec.Rules[0].Host
+			if host != "" && strings.Contains(host, "druid") {
+				return host
+			}
+		}
+	}
+	return ""
+}
 
 func (s *TestSuite) checkPodsRunning(ctx context.Context, namespace, labelSelector, name string) {
 	pods, err := s.clientset.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{

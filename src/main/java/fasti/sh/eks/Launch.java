@@ -6,78 +6,63 @@ import static fasti.sh.execute.serialization.Format.name;
 import com.fasterxml.jackson.core.type.TypeReference;
 import fasti.sh.eks.stack.DruidReleaseConf;
 import fasti.sh.eks.stack.DruidStack;
-import fasti.sh.execute.serialization.Mapper;
-import fasti.sh.execute.serialization.Template;
+import fasti.sh.execute.util.ContextUtils;
+import fasti.sh.execute.util.TemplateUtils;
 import fasti.sh.model.main.Common;
 import fasti.sh.model.main.Release;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import lombok.SneakyThrows;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.StackProps;
 
+/**
+ * CDK application entry point for Druid on EKS infrastructure deployment.
+ *
+ * <p>
+ * Deploys a complete Apache Druid cluster on Amazon EKS with supporting infrastructure including VPC, managed addons, observability, and
+ * Druid-specific resources (RDS, S3, MSK).
+ */
 public class Launch {
+
   public static void main(final String[] args) {
     var app = new App();
 
     var conf = get(app);
 
     new DruidStack(
-        app, conf.release(),
-        StackProps.builder()
-            .stackName(name(conf.release().common().id(), "druid"))
-            .env(
-                Environment.builder()
-                    .account(conf.release().common().account())
-                    .region(conf.release().common().region())
-                    .build())
-            .description(
-                describe(
-                    conf.platform(),
-                    String.format(
-                        "Druid cluster release [%s/%s] - Apache Druid on EKS",
-                        conf.release().common().name(),
-                        conf.release().common().alias())))
-            .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
-            .build());
+      app, conf.release(),
+      StackProps
+        .builder()
+        .stackName(name(conf.release().common().id(), "druid"))
+        .env(
+          Environment
+            .builder()
+            .account(conf.release().common().account())
+            .region(conf.release().common().region())
+            .build())
+        .description(
+          describe(
+            conf.platform(),
+            String
+              .format(
+                "Druid cluster release [%s/%s] - Apache Druid on EKS",
+                conf.release().common().name(),
+                conf.release().common().alias())))
+        .tags(Common.Maps.from(conf.platform().tags(), conf.release().common().tags()))
+        .build());
 
     app.synth();
   }
 
-  @SneakyThrows
   private static Release<DruidReleaseConf> get(App app) {
-    var parsed = Template.parse(
-        app,
-        "conf.mustache",
-        Map.ofEntries(
-            Map.entry(
-                "deployment:eks:druid:release",
-                app.getNode().getContext("deployment:eks:druid:release").toString()),
-            Map.entry("deployment:tags", tags(app))));
+    var mappings = Map
+      .<String, Object>ofEntries(
+        Map
+          .entry(
+            "deployment:eks:druid:release",
+            app.getNode().getContext("deployment:eks:druid:release").toString()),
+        Map.entry("deployment:tags", ContextUtils.parseTags(app, "deployment:tags")));
     var type = new TypeReference<Release<DruidReleaseConf>>() {};
-    return Mapper.get().readValue(parsed, type);
-  }
-
-  private static ArrayList<Map<String, String>> tags(App app) {
-    var tags = app.getNode().getContext("deployment:tags");
-    var results = new ArrayList<Map<String, String>>();
-    if (tags instanceof List<?> tagList) {
-      for (var tag : tagList) {
-        if (tag instanceof Map<?, ?> tagMap) {
-          var safeTagMap = new HashMap<String, String>();
-          for (var entry : tagMap.entrySet()) {
-            if (entry.getKey() instanceof String key && entry.getValue() instanceof String value) {
-              safeTagMap.put(key, value);
-            }
-          }
-          results.add(safeTagMap);
-        }
-      }
-    }
-
-    return results;
+    return TemplateUtils.parseAs(app, "conf.mustache", mappings, type);
   }
 }

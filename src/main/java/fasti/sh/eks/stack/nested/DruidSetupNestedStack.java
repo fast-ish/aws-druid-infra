@@ -14,13 +14,11 @@ import fasti.sh.execute.aws.msk.MskConstruct;
 import fasti.sh.execute.aws.rds.RdsConstruct;
 import fasti.sh.execute.aws.s3.BucketConstruct;
 import fasti.sh.execute.aws.secretsmanager.SecretConstruct;
-import fasti.sh.execute.serialization.Mapper;
-import fasti.sh.execute.serialization.Template;
+import fasti.sh.execute.util.TemplateUtils;
 import fasti.sh.model.main.Common;
 import java.util.List;
 import java.util.Map;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import software.amazon.awscdk.NestedStack;
 import software.amazon.awscdk.NestedStackProps;
 import software.amazon.awscdk.services.ec2.Vpc;
@@ -32,6 +30,18 @@ import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.secretsmanager.Secret;
 import software.constructs.Construct;
 
+/**
+ * Nested stack for Druid infrastructure setup.
+ *
+ * <p>
+ * Creates all supporting resources required by the Druid cluster:
+ * <ul>
+ * <li>Access - IAM roles and service accounts for Druid pods</li>
+ * <li>Secrets - Admin credentials and system credentials in Secrets Manager</li>
+ * <li>Storage - RDS PostgreSQL metadata store, S3 buckets for deep storage and logs</li>
+ * <li>Ingestion - MSK Serverless cluster for Kafka-based data ingestion</li>
+ * </ul>
+ */
 @Getter
 public class DruidSetupNestedStack extends NestedStack {
   private final DruidAccessConstruct accessConstruct;
@@ -54,12 +64,11 @@ public class DruidSetupNestedStack extends NestedStack {
   static class DruidAccessConstruct extends Construct {
     private final IRole role;
 
-    @SneakyThrows
     DruidAccessConstruct(Construct scope, Common common, DruidConf conf, ICluster cluster) {
       super(scope, "access");
 
       var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
-      var configuration = Mapper.get().readValue(Template.parse(scope, conf.access(), replace), Access.class);
+      var configuration = TemplateUtils.parseAs(scope, conf.access(), replace, Access.class);
 
       var oidc = cluster.getOpenIdConnectProvider();
       var principal = configuration.serviceAccount().role().principal().oidcPrincipal(this, oidc, configuration.serviceAccount());
@@ -72,12 +81,11 @@ public class DruidSetupNestedStack extends NestedStack {
     private final Secret admin;
     private final Secret systemCredentials;
 
-    @SneakyThrows
     DruidSecretsConstruct(Construct scope, Common common, DruidConf conf) {
       super(scope, "secrets");
 
       var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
-      var configuration = Mapper.get().readValue(Template.parse(scope, conf.secrets(), replace), Secrets.class);
+      var configuration = TemplateUtils.parseAs(scope, conf.secrets(), replace, Secrets.class);
       this.admin = new SecretConstruct(this, common, configuration.admin()).secret();
       this.systemCredentials = new SecretConstruct(this, common, configuration.system()).secret();
     }
@@ -90,12 +98,11 @@ public class DruidSetupNestedStack extends NestedStack {
     private final Bucket deepStorage;
     private final Bucket multiStageQueryBucket;
 
-    @SneakyThrows
     DruidStorageConstruct(Construct scope, Common common, DruidConf conf, Vpc vpc, ICluster cluster) {
       super(scope, "storage");
 
       var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
-      var configuration = Mapper.get().readValue(Template.parse(scope, conf.storage(), replace), Storage.class);
+      var configuration = TemplateUtils.parseAs(scope, conf.storage(), replace, Storage.class);
       this.rdsConstruct = new RdsConstruct(this, common, configuration.metadata(), vpc, List.of(cluster.getClusterSecurityGroup()));
       this.deepStorage = new BucketConstruct(this, common, configuration.deepStorage()).bucket();
       this.indexLogs = new BucketConstruct(this, common, configuration.indexLogs()).bucket();
@@ -108,12 +115,11 @@ public class DruidSetupNestedStack extends NestedStack {
     private final CfnServerlessCluster msk;
     private final List<ServiceAccount> mskServiceAccounts;
 
-    @SneakyThrows
     DruidIngestionConstruct(Construct scope, Common common, DruidConf conf, Vpc vpc, ICluster cluster) {
       super(scope, "ingestion");
 
       var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
-      var configuration = Mapper.get().readValue(Template.parse(scope, conf.ingestion(), replace), Ingestion.class);
+      var configuration = TemplateUtils.parseAs(scope, conf.ingestion(), replace, Ingestion.class);
       this.msk = new MskConstruct(this, common, configuration.kafka(), vpc, List.of(cluster.getClusterSecurityGroupId())).msk();
       this.mskServiceAccounts = configuration
         .kafka()
