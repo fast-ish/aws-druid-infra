@@ -1,9 +1,14 @@
 package fasti.sh.eks.stack.nested;
 
 import fasti.sh.eks.stack.model.DruidConf;
+import fasti.sh.eks.stack.model.druid.Access;
+import fasti.sh.eks.stack.model.druid.Ingestion;
 import fasti.sh.execute.aws.ecr.DockerImageConstruct;
+import fasti.sh.execute.aws.eks.PodIdentityConstruct;
 import fasti.sh.execute.util.TemplateUtils;
 import fasti.sh.model.main.Common;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.Getter;
 import software.amazon.awscdk.NestedStack;
@@ -20,11 +25,13 @@ import software.constructs.Construct;
  *
  * <p>
  * Deploys the Druid cluster via Helm after setup resources are provisioned. Dependencies are managed through {@link DruidSetupNestedStack}
- * which creates databases, storage, and service accounts.
+ * which creates databases and storage. Pod Identities for Druid pods and MSK clients are created in this stack.
  */
 @Getter
 public class DruidNestedStack extends NestedStack {
   private final DruidSetupNestedStack setupStack;
+  private final PodIdentityConstruct druidPodIdentity;
+  private final List<PodIdentityConstruct> mskClientPodIdentities;
   private final DockerImageConstruct dockerImage;
   private final HelmChart chart;
 
@@ -32,15 +39,32 @@ public class DruidNestedStack extends NestedStack {
     super(scope, "druid", props);
 
     this.setupStack = new DruidSetupNestedStack(this, common, conf, vpc, cluster);
+
+    // Parse configurations
+    var replace = Map.<String, Object>of("deployment:eks:druid:release", conf.chart().release());
+    var accessConf = TemplateUtils.parseAs(scope, conf.access(), replace, Access.class);
+    var ingestionConf = TemplateUtils.parseAs(scope, conf.ingestion(), replace, Ingestion.class);
+
+    // Create Pod Identity for Druid pods
+    this.druidPodIdentity = new PodIdentityConstruct(this, common, accessConf.podIdentity(), cluster);
+
+    // Create Pod Identities for MSK clients
+    this.mskClientPodIdentities = ingestionConf
+      .kafka()
+      .clients()
+      .stream()
+      .map(client -> new PodIdentityConstruct(this, common, client.podIdentity(), cluster))
+      .toList();
+
     this.dockerImage = new DockerImageConstruct(this, common, conf.dockerImage());
 
-    var replace = Map
-      .<String, Object>of(
-        "deployment:eks:druid:release",
-        conf.chart().release(),
-        "image:uri",
-        this.dockerImage.imageUri());
-    var values = TemplateUtils.parseAsMap(scope, conf.chart().values(), replace);
+    // Prepare template mappings for Helm values
+    var templateMappings = new HashMap<String, Object>();
+    templateMappings.put("deployment:eks:druid:release", conf.chart().release());
+    templateMappings.put("image:uri", this.dockerImage.imageUri());
+    templateMappings.put("druid.role.arn", this.druidPodIdentity.roleConstruct().role().getRoleArn());
+
+    var values = TemplateUtils.parseAsMap(scope, conf.chart().values(), templateMappings);
 
     this.chart = HelmChart.Builder
       .create(this, conf.chart().name())

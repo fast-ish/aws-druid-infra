@@ -1,5 +1,5 @@
 package fasti.sh.eks.stack.model.druid;
 
-import fasti.sh.model.aws.eks.ServiceAccountConf;
+import fasti.sh.model.aws.eks.PodIdentity;
 
-public record Access(ServiceAccountConf serviceAccount) {}
+public record Access(PodIdentity podIdentity) {}

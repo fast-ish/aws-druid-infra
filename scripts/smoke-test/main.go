@@ -457,21 +457,14 @@ func (s *TestSuite) testDruidInfrastructure() {
 		return
 	}
 
-	s.printSection("Druid Service Accounts (IRSA)")
-	// Check for Druid service accounts with IRSA
+	s.printSection("Druid Service Accounts")
+	// Check for Druid service accounts
 	serviceAccounts, err := s.clientset.CoreV1().ServiceAccounts(druidNamespace).List(ctx, metav1.ListOptions{})
 	if err == nil {
-		irsaConfigured := 0
-		for _, sa := range serviceAccounts.Items {
-			if sa.Annotations != nil {
-				if roleArn, ok := sa.Annotations["eks.amazonaws.com/role-arn"]; ok && roleArn != "" {
-					irsaConfigured++
-					s.pass(fmt.Sprintf("ServiceAccount '%s' has IRSA", sa.Name))
-				}
-			}
-		}
-		if irsaConfigured == 0 {
-			s.warn("No Druid service accounts with IRSA found")
+		if len(serviceAccounts.Items) > 0 {
+			s.pass(fmt.Sprintf("ServiceAccounts found: %d", len(serviceAccounts.Items)))
+		} else {
+			s.warn("No Druid service accounts found")
 		}
 	}
 
@@ -635,17 +628,13 @@ func (s *TestSuite) testDruidInfrastructure() {
 	if serviceAccounts, err := s.clientset.CoreV1().ServiceAccounts("").List(ctx, metav1.ListOptions{}); err == nil {
 		for _, sa := range serviceAccounts.Items {
 			if strings.Contains(strings.ToLower(sa.Name), "msk") || strings.Contains(strings.ToLower(sa.Name), "kafka") {
-				if sa.Annotations != nil {
-					if roleArn, ok := sa.Annotations["eks.amazonaws.com/role-arn"]; ok && roleArn != "" {
-						mskServiceAccounts++
-						s.pass(fmt.Sprintf("MSK/Kafka ServiceAccount '%s/%s' has IRSA", sa.Namespace, sa.Name))
-					}
-				}
+				mskServiceAccounts++
+				s.pass(fmt.Sprintf("MSK/Kafka ServiceAccount '%s/%s' exists", sa.Namespace, sa.Name))
 			}
 		}
 	}
 	if mskServiceAccounts == 0 {
-		s.warn("No MSK/Kafka service accounts with IRSA found (may not use Kafka ingestion)")
+		s.warn("No MSK/Kafka service accounts found (may not use Kafka ingestion)")
 	}
 }
 

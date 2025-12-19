@@ -2,7 +2,7 @@ kafka:
   name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk
   clients:
     - name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-client
-      serviceAccount:
+      podIdentity:
         metadata:
           name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-sa
           namespace: api
@@ -16,7 +16,10 @@ kafka:
             "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
           annotations: { }
         role:
-          name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-sa
+          name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-pod-identity
+          principal:
+            type: service
+            value: pods.eks.amazonaws.com
           managedPolicyNames: [ ]
           customPolicies:
             - name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-cluster-access
@@ -36,6 +39,10 @@ kafka:
             "{{deployment:domain}}:organization": "{{deployment:organization}}"
             "{{deployment:domain}}:name": "{{deployment:team:name}}"
             "{{deployment:domain}}:alias": "{{deployment:team:alias}}"
+        tags:
+          "{{deployment:domain}}:resource-type": pod-identity-association
+          "{{deployment:domain}}:category": api
+          "{{deployment:domain}}:type": ingest
   tags:
     "{{deployment:domain}}:resource-type": msk
     "{{deployment:domain}}:category": compute

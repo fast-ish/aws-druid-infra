@@ -1,4 +1,4 @@
-serviceAccount:
+podIdentity:
   metadata:
     name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
     namespace: druid
@@ -12,10 +12,10 @@ serviceAccount:
       "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
     annotations: { }
   role:
-    name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-sa
+    name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-pod-identity
     principal:
       type: service
-      value: ec2.amazonaws.com
+      value: pods.eks.amazonaws.com
     managedPolicyNames: [ ]
     customPolicies:
       - name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-bucket-access
@@ -59,3 +59,7 @@ serviceAccount:
       "{{deployment:domain}}:organization": "{{deployment:organization}}"
       "{{deployment:domain}}:name": "{{deployment:team:name}}"
       "{{deployment:domain}}:alias": "{{deployment:team:alias}}"
+  tags:
+    "{{deployment:domain}}:resource-type": pod-identity-association
+    "{{deployment:domain}}:category": compute.storage
+    "{{deployment:domain}}:type": analytics
