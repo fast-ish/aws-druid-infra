@@ -101,10 +101,13 @@ jobs:
           update_version() {
             local field=$1
             local new_version=$2
-            # Use awk to update the specific version line after the field
+            # Use sed to update the specific version line after the field, preserving indentation
             awk -v field="$field" -v ver="$new_version" '
               /^  / && $0 ~ "^  "field":$" {found=1}
-              found && /^    version:/ {$2=ver; found=0}
+              found && /^    version:/ {
+                sub(/version:.*/, "version: " ver)
+                found=0
+              }
               {print}
             ' "$ADDONS_FILE" > "${ADDONS_FILE}.tmp"
             mv "${ADDONS_FILE}.tmp" "$ADDONS_FILE"
