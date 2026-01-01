@@ -358,15 +358,15 @@ Add [Grafana Cloud](https://grafana.com/docs/grafana-cloud/) configuration for o
 
 ```json
 {
-  "hosted:eks:grafana:instanceId": "000000",
-  "hosted:eks:grafana:key": "glc_xyz",
-  "hosted:eks:grafana:lokiHost": "https://logs-prod-000.grafana.net",
-  "hosted:eks:grafana:lokiUsername": "000000",
-  "hosted:eks:grafana:prometheusHost": "https://prometheus-prod-000-prod-us-west-0.grafana.net",
-  "hosted:eks:grafana:prometheusUsername": "0000000",
-  "hosted:eks:grafana:tempoHost": "https://tempo-prod-000-prod-us-west-0.grafana.net/tempo",
-  "hosted:eks:grafana:tempoUsername": "000000",
-  "hosted:eks:grafana:pyroscopeHost": "https://profiles-prod-000.grafana.net:443"
+  "deployment:eks:grafana:instanceId": "000000",
+  "deployment:eks:grafana:key": "glc_xyz",
+  "deployment:eks:grafana:lokiHost": "https://logs-prod-000.grafana.net",
+  "deployment:eks:grafana:lokiUsername": "000000",
+  "deployment:eks:grafana:prometheusHost": "https://prometheus-prod-000-prod-us-west-0.grafana.net",
+  "deployment:eks:grafana:prometheusUsername": "0000000",
+  "deployment:eks:grafana:tempoHost": "https://tempo-prod-000-prod-us-west-0.grafana.net/tempo",
+  "deployment:eks:grafana:tempoUsername": "000000",
+  "deployment:eks:grafana:pyroscopeHost": "https://profiles-prod-000.grafana.net:443"
 }
 ```
 
@@ -407,14 +407,14 @@ Add IAM role mappings in `cdk.context.json` for [EKS access entries](https://doc
 
 ```json
 {
-  "hosted:eks:administrators": [
+  "deployment:eks:administrators": [
     {
       "username": "administrator",
       "role": "arn:aws:iam::000000000000:role/AWSReservedSSO_AdministratorAccess_abc",
       "email": "admin@example.com"
     }
   ],
-  "hosted:eks:users": [
+  "deployment:eks:users": [
     {
       "username": "user",
       "role": "arn:aws:iam::000000000000:role/AWSReservedSSO_DeveloperAccess_abc",
@@ -489,7 +489,8 @@ The build process uses [Mustache templating](https://mustache.github.io/) to inj
 | `{{region}}` | String | AWS region |
 | `{{environment}}` | String | Environment name |
 | `{{version}}` | String | Resource version |
-| `{{hosted:id}}` | String | Unique deployment identifier |
+| `{{platform:id}}` | String | Unique platform identifier |
+| `{{deployment:id}}` | String | Unique deployment identifier |
 
 ### Template Structure
 
