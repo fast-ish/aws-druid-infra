@@ -12,7 +12,7 @@ podIdentity:
       "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
     annotations: { }
   role:
-    name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-pod-identity
+    name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-role
     principal:
       type: service
       value: pods.eks.amazonaws.com

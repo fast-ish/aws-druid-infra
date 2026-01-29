@@ -9,7 +9,7 @@ indexLogs:
       policy: policy/bucket-access.mustache
       principals:
         - type: arn
-          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-pod-identity
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-role
       mappings:
         resources:
           - "arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-indexlogs/*"
@@ -38,7 +38,7 @@ deepStorage:
       policy: "policy/bucket-access.mustache"
       principals:
         - type: arn
-          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-pod-identity
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-role
       mappings:
         resources:
           - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-deepstorage/*
@@ -67,7 +67,7 @@ multiStageQuery:
       policy: policy/bucket-access.mustache
       principals:
         - type: arn
-          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-pod-identity
+          value: arn:aws:iam::{{deployment:account}}:role/{{deployment:id}}-{{deployment:eks:druid:release}}-druid-role
       mappings:
         resources:
           - arn:aws:s3:::{{deployment:id}}-{{deployment:eks:druid:release}}-druid-msq/*

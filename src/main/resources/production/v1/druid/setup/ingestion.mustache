@@ -16,7 +16,7 @@ kafka:
             "{{deployment:domain}}/alias": "{{deployment:team:alias}}"
           annotations: { }
         role:
-          name: {{deployment:id}}-{{deployment:eks:druid:release}}-druid-msk-pod-identity
+          name: {{deployment:id}}-{{deployment:eks:druid:release}}-msk-role
           principal:
             type: service
             value: pods.eks.amazonaws.com
