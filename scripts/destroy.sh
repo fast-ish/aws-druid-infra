@@ -22,7 +22,7 @@ if [[ $# -lt 1 ]]; then
 fi
 
 DEPLOYMENT_ID="$1"
-STACK_NAME="${DEPLOYMENT_ID}-druid"
+STACK_NAME="druid-${DEPLOYMENT_ID}"
 
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║           TOTAL DESTRUCTION - ${STACK_NAME}${NC}"
@@ -30,7 +30,7 @@ echo -e "${BLUE}╚════════════════════�
 echo ""
 
 # Confirmation
-echo -e "${RED}WARNING: This will permanently delete ALL resources for ${DEPLOYMENT_ID}-druid${NC}"
+echo -e "${RED}WARNING: This will permanently delete ALL resources for druid-${DEPLOYMENT_ID}${NC}"
 echo -e "${YELLOW}Resources to be deleted:${NC}"
 echo "  - CloudFormation stacks"
 echo "  - RDS instances and clusters (Druid metadata)"

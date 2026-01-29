@@ -33,7 +33,7 @@ public class Launch {
       app, conf.release(),
       StackProps
         .builder()
-        .stackName(name(conf.release().common().id(), "druid"))
+        .stackName(name("druid", conf.release().common().id()))
         .env(
           Environment
             .builder()
